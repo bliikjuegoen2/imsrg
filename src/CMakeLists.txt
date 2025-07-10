@@ -64,6 +64,8 @@ if(IMSRG_BUILD_PYTHON_BINDINGS)
     add_subdirectory(extern/pybind11)
 endif()
 
+message(${CMAKE_CURRENT_BINARY_DIR})
+
 # Add a custom command that produces version.cpp, plus
 # a dummy output that's not actually produced, in order
 # to force version.cmake to always be re-run before the build
