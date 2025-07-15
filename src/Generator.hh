@@ -31,6 +31,7 @@ class Generator
  protected: //DK: Was private. Changed to inherit into GeneratorPV 
   Operator * H;
   Operator * Eta;
+  const Operator * G;
 
  public:
 
@@ -72,6 +73,8 @@ class Generator
 
 
 
+  void SetCasmir(const Operator& new_G);
+  void ConstructGenerator_IrrepUnmixing();
   void ConstructGenerator_SingleRef(std::function<double (double,double)>& etafunc );
   void ConstructGenerator_SingleRef_3body(std::function<double (double,double)>& etafunc );
   void ConstructGenerator_ShellModel(std::function<double (double,double)>& eta_func);

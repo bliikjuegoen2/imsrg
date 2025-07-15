@@ -18,7 +18,8 @@ std::function<double(double,double)> Generator::imaginarytime_func = [] (double 
 std::function<double(double,double)> Generator::qtransferatan1_func = [](double Hod, double denom){return pow(std::abs(denom)*M_NUCLEON/HBARC/HBARC, 0.5*1) * atan_func(Hod, denom);};
 
 Generator::Generator()
-  : generator_type("white"),/* modelspace(NULL),*/ denominator_cutoff(1e-6)  , denominator_delta(0), denominator_delta_index(-1), denominator_partitioning(Epstein_Nesbet),  only_2b_eta(false), use_isospin_averaging(false), only_1b_eta(false)
+  : generator_type("white"),/* modelspace(NULL),*/ denominator_cutoff(1e-6)  , denominator_delta(0), denominator_delta_index(-1), denominator_partitioning(Epstein_Nesbet),  only_2b_eta(false), use_isospin_averaging(false), only_1b_eta(false),
+    H(nullptr), Eta(nullptr), G(nullptr)
 {}
 
 
@@ -67,6 +68,9 @@ void Generator::AddToEta(Operator& H_s, Operator& Eta_s)
       std::istringstream( generator_type.substr( generator_type.find("_")+1) ) >> n;
       std::function<double(double,double)> qtransferatanN_func = [n](double Hod, double denom){return pow(std::abs(denom)*M_NUCLEON/HBARC/HBARC, 0.5*n) * atan_func(Hod, denom);};
       ConstructGenerator_SingleRef( qtransferatanN_func );
+   }
+   else if (generator_type == "irrep-unmixing") {
+       ConstructGenerator_IrrepUnmixing();
    }
    else
    {
@@ -251,7 +255,21 @@ double Generator::Get2bDenominator_Jdep(int ch, int ibra, int iket)
 
 
 
+void Generator::SetCasmir(const Operator &new_G) {
+   G = &new_G;
+}
 
+void Generator::ConstructGenerator_IrrepUnmixing() {
+    Operator new_Eta = Commutator::Commutator(
+        Commutator::Commutator(
+            Commutator::Commutator(*G, *H),
+            *H
+        ),
+        *G
+    );
+
+    *Eta = std::move(new_Eta);
+}
 
 
 
