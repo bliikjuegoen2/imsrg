@@ -95,6 +95,7 @@ int main(int argc, char** argv)
   std::string physical_system = parameters.s("physical_system");
   std::string denominator_partitioning = parameters.s("denominator_partitioning");
   std::string NAT_order = parameters.s("NAT_order");
+  std::string casmir = parameters.s("casmir");
 
   bool use_brueckner_bch = parameters.s("use_brueckner_bch") == "true";
   bool nucleon_mass_correction = parameters.s("nucleon_mass_correction") == "true";
@@ -1088,6 +1089,8 @@ int main(int argc, char** argv)
      imsrgsolver.SetDsmax(dsmax);
    }
   }
+
+  imsrgsolver.SetCasmir(casmir);
 
   imsrgsolver.Solve();
 
