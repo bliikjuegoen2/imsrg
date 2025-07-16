@@ -9,6 +9,7 @@ from typing import Any, Dict, List
 import hydra
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import ListConfig, OmegaConf as OC, DictConfig as Config
+from pathlib import Path as P
 
 
 @hydra.main(config_path="../config", config_name="parameters", version_base="1.1")
@@ -52,6 +53,8 @@ def main(cfg: Config):
                 args["e3max"] = cfg.batch.e3max
                 args["hw"] = hw
                 args["A"] = A
+                args["flowfile"] = f"{P.cwd()}/{args["flowfile"]}"
+                args["intfile"] = f"{P.cwd()}/{args["intfile"]}"
 
                 hcfg = HydraConfig.get()
 
@@ -70,8 +73,8 @@ def main(cfg: Config):
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task={cfg.num_threads}
-#SBATCH --output={cfg.out}
-#SBATCH --error={cfg.err}
+#SBATCH --output={P.cwd()}/{cfg.out}
+#SBATCH --error={P.cwd()}/{cfg.err}
 #SBATCH --time={time_request}
 #SBATCH --mail-user={cfg.email}
 #SBATCH --mail-type=END
