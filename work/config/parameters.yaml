@@ -5,7 +5,7 @@ defaults:
   - nuclei: Ar36
 
 num_threads: 48
-bin: /projects/rrg-holt/k239nguy/bin/imsrg++
+bin: /project/rrg-holt/k239nguy/bin/imsrg++
 email: k239nguy@uwaterloo.ca
 out: imsrg.out
 err: imsrg.err
