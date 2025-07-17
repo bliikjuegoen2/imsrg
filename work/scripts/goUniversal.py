@@ -182,7 +182,8 @@ elif BATCHSYS == "SLURM":
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=%d
-#SBATCH --output=/home/alextodd/projects/rrg-holt/alextodd/results/imsrg_log/%s.%%j
+#SBATCH --output=/project/rrg-holt/k239nguy/logs/out-%s.%%j
+#SBATCH --error=/project/rrg-holt/k239nguy/logs/err-%s.%%j
 #SBATCH --time=%s
 #SBATCH --mail-user=%s
 #SBATCH --mail-type=END
