@@ -68,7 +68,7 @@ def main(cfg: Config):
 
                 cmd_args = f"{cfg.bin} {cmd_args}"
 
-                DefFile = f"""#!/usr/bin/env bash
+                DefFile = f"""#!/bin/bash
 #SBATCH --account=rrg-holt
 #SBATCH --nodes=1
 #SBATCH --ntasks=1

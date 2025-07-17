@@ -354,7 +354,7 @@ for Z in range(4, 5):
                         )
                         sfile.close()
                         call(["sbatch", jobname + ".batch"])
-                    remove(jobname + ".batch")  # delete the file
+                    # remove(jobname + ".batch")  # delete the file
                     sleep(0.1)
                 else:
                     call(cmd.split())  # Run in the terminal, rather than submitting
