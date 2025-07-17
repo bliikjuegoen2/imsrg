@@ -70,6 +70,7 @@ void Generator::AddToEta(Operator& H_s, Operator& Eta_s)
       ConstructGenerator_SingleRef( qtransferatanN_func );
    }
    else if (generator_type == "irrep-unmixing") {
+       std::cout << "unmixing enabled [AddToEta]" << std::endl;
        ConstructGenerator_IrrepUnmixing();
    }
    else
@@ -92,6 +93,7 @@ Operator Generator::GetHod(Operator& H)
       if (generator_type == sm )  return GetHod_ShellModel(H);
    }
    if (generator_type == "irrep-unmixing") {
+       std::cout << "unmixing enabled [GetHod]" << std::endl;
        return GetHod_IrrepUnmixing(H);
    }
    std::cout << "GetHod not implemented for generator type " << generator_type << "   so you get zero." << std::endl;

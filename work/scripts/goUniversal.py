@@ -312,13 +312,9 @@ for Z in range(4, 5):
                 if "BetaCM" in ARGS:
                     jobname += "_" + ARGS["BetaCM"]
                 ARGS["flowfile"] = (
-                    "/Users/antoinebelley/Documents/TRIUMF/results/BCH_"
-                    + jobname
-                    + ".dat"
+                    "/project/rrg-holt/k239nguy/results/BCH_" + jobname + ".dat"
                 )
-                ARGS["intfile"] = (
-                    "/Users/antoinebelley/Documents/TRIUMF/results/" + jobname
-                )
+                ARGS["intfile"] = "/project/rrg-holt/k239nguy/results/" + jobname
 
                 cmd = " ".join([exe] + ["%s=%s" % (x, ARGS[x]) for x in ARGS])
                 print(cmd)
