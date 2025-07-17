@@ -154,6 +154,13 @@ void IMSRGSolver::Reset()
   NewOmega();
 }
 
+void IMSRGSolver::SetCasmir(std::string c) {
+  if (c == "") {
+    // when casmir operator is null
+    return;
+  }
+}
+
 void IMSRGSolver::SetGenerator(std::string gen)
 {
   generator.SetType(gen);

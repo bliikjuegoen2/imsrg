@@ -18,7 +18,8 @@ std::function<double(double,double)> Generator::imaginarytime_func = [] (double 
 std::function<double(double,double)> Generator::qtransferatan1_func = [](double Hod, double denom){return pow(std::abs(denom)*M_NUCLEON/HBARC/HBARC, 0.5*1) * atan_func(Hod, denom);};
 
 Generator::Generator()
-  : generator_type("white"),/* modelspace(NULL),*/ denominator_cutoff(1e-6)  , denominator_delta(0), denominator_delta_index(-1), denominator_partitioning(Epstein_Nesbet),  only_2b_eta(false), use_isospin_averaging(false), only_1b_eta(false)
+  : generator_type("white"),/* modelspace(NULL),*/ denominator_cutoff(1e-6)  , denominator_delta(0), denominator_delta_index(-1), denominator_partitioning(Epstein_Nesbet),  only_2b_eta(false), use_isospin_averaging(false), only_1b_eta(false),
+    H(nullptr), Eta(nullptr), G(nullptr)
 {}
 
 
@@ -68,6 +69,9 @@ void Generator::AddToEta(Operator& H_s, Operator& Eta_s)
       std::function<double(double,double)> qtransferatanN_func = [n](double Hod, double denom){return pow(std::abs(denom)*M_NUCLEON/HBARC/HBARC, 0.5*n) * atan_func(Hod, denom);};
       ConstructGenerator_SingleRef( qtransferatanN_func );
    }
+   else if (generator_type == "irrep-unmixing") {
+       ConstructGenerator_IrrepUnmixing();
+   }
    else
    {
       std::cout << "Error. Unkown generator_type: " << generator_type << std::endl;
@@ -86,6 +90,9 @@ Operator Generator::GetHod(Operator& H)
    for (auto sm : {"shell-model-wegner","shell-model","shell-model-atan","shell-model-imaginary-time"})
    {
       if (generator_type == sm )  return GetHod_ShellModel(H);
+   }
+   if (generator_type == "irrep-unmixing") {
+       return GetHod_IrrepUnmixing(H);
    }
    std::cout << "GetHod not implemented for generator type " << generator_type << "   so you get zero." << std::endl;
    return 0*H; 
@@ -251,7 +258,27 @@ double Generator::Get2bDenominator_Jdep(int ch, int ibra, int iket)
 
 
 
+void Generator::SetCasmir(const Operator &new_G) {
+   G = &new_G;
+}
 
+void Generator::ConstructGenerator_IrrepUnmixing() {
+
+    if (G == nullptr) {
+        std::cout << "[Error] : Casmir Operator is set to null! Set Casmir Operator for Irrep Unmixing!" << std::endl;
+        return;
+    }
+
+    Operator new_Eta = Commutator::Commutator(
+        Commutator::Commutator(
+            Commutator::Commutator(*G, *H),
+            *H
+        ),
+        *G
+    );
+
+    *Eta = std::move(new_Eta);
+}
 
 
 
@@ -621,6 +648,18 @@ void Generator::ConstructGenerator_1PA(std::function<double(double,double)>& eta
 
 
 
+Operator Generator::GetHod_IrrepUnmixing(Operator &H) {
+    if (G == nullptr) {
+        std::cout << "[Error] : Casmir Operator is set to null! Set Casmir Operator for Irrep Unmixing!" << std::endl;
+        return H;
+    }
+
+    // I am assuming the main property we care about for Hod is that -> 0
+
+    Operator Hod = Commutator::Commutator(*G, H);
+
+    return std::move(Hod);
+}
 
 
 Operator  Generator::GetHod_SingleRef(Operator& H )
