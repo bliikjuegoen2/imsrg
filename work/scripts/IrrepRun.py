@@ -83,6 +83,7 @@ def main(cfg: Config):
 
 
 cd $SLURM_SUBMIT_DIR
+echo SLURM_SUBMIT_DIR = $SLURM_SUBMIT_DIR
 echo NTHREADS = {cfg.num_threads}
 export OMP_NUM_THREADS={cfg.num_threads}
 
