@@ -56,11 +56,11 @@ def main(cfg: Config):
                 args["flowfile"] = f"{P.cwd()}/{args["flowfile"]}"
                 args["intfile"] = f"{P.cwd()}/{args["intfile"]}"
 
-                hcfg = HydraConfig.get()
+                # hcfg = HydraConfig.get()
 
                 # print(hcfg.job)
 
-                jobname = hcfg.job.name
+                jobname = f"{cfg.args.valence_space}{cfg.args.LECs}{cfg.args.method}{args["reference"]}{args["emax"]}{args["e3max"]}{cfg.args.smax}{args["hw"]}{A}"
 
                 # logname = f"{jobname}_{hcfg.run.dir}"
 
@@ -68,7 +68,7 @@ def main(cfg: Config):
 
                 cmd_args = f"{cfg.bin} {cmd_args}"
 
-                DefFile = f"""#!/bin/bash
+                DefFile = f"""#!/usr/bin/env bash
 #SBATCH --account=rrg-holt
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
