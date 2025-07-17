@@ -102,7 +102,5 @@ if __name__ == "__main__":
     main()
 
 """
-smax=0 dsmax=0.5 basis=ocsillator omega_norm_max=0.25 file2e1max=18 file2e2max=36 file2lmax=18 file3e1max=18 file3e2max=36 file3e3max=24 method=magnus 2bme=/projects/rrg-holt/shared/TwBME-HO_NN-only_N3LO_EM500_srg1.80_hw16_emax18_e2max36.me2j.gz 3bme=/projects/rrg-holt/shared/NO2B_ThBME_EM1.8_2.0_3NFJmax15_IS_hw16_ms18_36_24.stream.bin LECs=EM1.8_2.0 3bme_type=no2b valence_space=p-shell Operators=M0nu_F_3.54_none,M0nu_GT_3.54_none,M0nu_T_3.54_none reference=Ar36 emax=4 e3max=12 hw=16 A=36
 
-smax=0 dsmax=0.5 basis=oscillator omega_norm_max=0.25 file2e1max=18 file2e2max=36 file2lmax=18 file3e1max=18 file3e2max=36 file3e3max=24 method=magnus reference=Be10 emax=4 e3max=12 2bme=/projects/def-holt/shared/TwBME-HO_NN-only_N3LO_EM500_srg1.80_hw16_emax18_e2max36.me2j.gz 3bme=/projects/def-holt/shared/NO2B_ThBME_EM1.8_2.0_3NFJmax15_IS_hw16_ms18_36_24.stream.bin LECs=EM1.8_2.0 3bme_type=no2b hw=16 A=10 valence_space=p-shell Operators=M0nu_F_3.54_none,M0nu_GT_3.54_none,M0nu_T_3.54_none flowfile=/projects/rrg-holt/k239nguy/results/BCH_p-shell_EM1.8_2.0_magnus_Be10_e4_E12_s0_hw16_A10.dat intfile=/projects/rrg-holt/k239nguy/results/p-shell_EM1.8_2.0_magnus_Be10_e4_E12_s0_hw16_A10
 """
