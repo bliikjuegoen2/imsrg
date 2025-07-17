@@ -1,6 +1,6 @@
 smax: 0
 dsmax: 0.5
-basis: ocsillator
+basis: oscillator
 omega_norm_max: 0.25
 file2e1max: "18 file2e2max=36 file2lmax=18"
 file3e1max: "18 file3e2max=36 file3e3max=24"
