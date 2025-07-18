@@ -73,8 +73,8 @@ def main(cfg: Config):
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task={cfg.num_threads}
-#SBATCH --output={P.cwd()}/{cfg.out}
-#SBATCH --error={P.cwd()}/{cfg.err}
+#SBATCH --output={P.cwd()}/{jobname}.%j.out
+#SBATCH --error={P.cwd()}/{jobname}.%j.err
 #SBATCH --time={time_request}
 #SBATCH --mail-user={cfg.email}
 #SBATCH --mail-type=END
