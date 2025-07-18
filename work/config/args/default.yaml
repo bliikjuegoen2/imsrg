@@ -11,5 +11,3 @@ LECs: EM1.8_2.0
 3bme_type: no2b
 valence_space: p-shell
 Operators: "M0nu_F_3.54_none,M0nu_GT_3.54_none,M0nu_T_3.54_none"
-flowfile: "BCH_irrep.dat"
-intfile: "irrep"
