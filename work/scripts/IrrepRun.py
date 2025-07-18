@@ -16,14 +16,18 @@ from pathlib import Path as P
 def main(cfg: Config):
     print(OC.to_yaml(cfg))
 
-    elements: List[str] = list(cfg.elements)
+    # elements: List[str] = list(cfg.elements)
+
+    # make the directories
+    for dir_name in ["logs", "results", "batches"]:
+        (P.cwd() / dir_name).mkdir()
 
     for nucleus in cfg.nuclei:
-        Z: int = 0
-        try:
-            Z = elements.index(nucleus.Z)
-        except ValueError:
-            raise ValueError(f"{nucleus.Z} is not an element!")
+        # Z: int = 0
+        # try:
+        #     Z = elements.index(nucleus.Z)
+        # except ValueError:
+        #     raise ValueError(f"{nucleus.Z} is not an element!")
 
         A: int = nucleus.A
 
@@ -53,16 +57,11 @@ def main(cfg: Config):
                 args["e3max"] = cfg.batch.e3max
                 args["hw"] = hw
                 args["A"] = A
-                args["flowfile"] = f"{P.cwd()}/{args["flowfile"]}"
-                args["intfile"] = f"{P.cwd()}/{args["intfile"]}"
 
-                # hcfg = HydraConfig.get()
+                jobname = f"{cfg.args.valence_space}_{cfg.args.LECs}_{cfg.args.method}_{args["reference"]}_e{args["emax"]}_E{args["e3max"]}_s{cfg.args.smax}_hw{args["hw"]}_A{A}"
 
-                # print(hcfg.job)
-
-                jobname = f"{cfg.args.valence_space}{cfg.args.LECs}{cfg.args.method}{args["reference"]}{args["emax"]}{args["e3max"]}{cfg.args.smax}{args["hw"]}{A}"
-
-                # logname = f"{jobname}_{hcfg.run.dir}"
+                args["flowfile"] = f"results/BCH_{jobname}.dat"
+                args["intfile"] = f"results/{jobname}"
 
                 cmd_args = " ".join(f"{key}={value}" for key, value in args.items())
 
@@ -73,8 +72,8 @@ def main(cfg: Config):
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task={cfg.num_threads}
-#SBATCH --output={P.cwd()}/{jobname}.%j.out
-#SBATCH --error={P.cwd()}/{jobname}.%j.err
+#SBATCH --output={P.cwd()}/logs/{jobname}.%j.out
+#SBATCH --error={P.cwd()}/logs/{jobname}.%j.err
 #SBATCH --time={time_request}
 #SBATCH --mail-user={cfg.email}
 #SBATCH --mail-type=END
@@ -90,13 +89,17 @@ export OMP_NUM_THREADS={cfg.num_threads}
 time srun {cmd_args}
                 """
 
+                print("==========================================")
+
                 print(DefFile)
 
-                with open(f"{jobname}.def", "w") as sfile:
+                print("==========================================")
+
+                with open(f"batches/{jobname}.def", "w") as sfile:
 
                     sfile.write(DefFile)
 
-                call(["sbatch", f"{jobname}.def"])
+                call(["sbatch", f"batches/{jobname}.def"])
 
 
 if __name__ == "__main__":
