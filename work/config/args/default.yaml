@@ -5,8 +5,8 @@ omega_norm_max: 0.25
 file2e1max: "18 file2e2max=36 file2lmax=18"
 file3e1max: "18 file3e2max=36 file3e3max=24"
 method: magnus
-2bme: /project/def-holt/shared/me2j/TwBME-HO_NN-only_N3LO_EM500_srg1.80_hw16_emax18_e2max36.me2j.gz
-3bme: /project/def-holt/shared/me3j/NO2B_ThBME_EM1.8_2.0_3NFJmax15_IS_hw16_ms18_36_24.stream.bin
+2bme: ${shared_path}/me2j/TwBME-HO_NN-only_N3LO_EM500_srg1.80_hw16_emax18_e2max36.me2j.gz
+3bme: ${shared_path}/me3j/NO2B_ThBME_EM1.8_2.0_3NFJmax15_IS_hw16_ms18_36_24.stream.bin
 LECs: EM1.8_2.0
 3bme_type: no2b
 valence_space: p-shell
