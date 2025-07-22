@@ -1090,7 +1090,15 @@ int main(int argc, char** argv)
    }
   }
 
-  imsrgsolver.SetCasmir(casmir);
+  if(casmir != "") {
+    // might be modelspace_imsrg? all other instances used modelspace
+    // G = -casmir operator from the Johnson paper
+    Operator G = -rw.ReadOperator2b_Miyagi(casmir, modelspace);
+
+    imsrgsolver.SetCasmir(std::move(G));
+
+  }
+
 
   imsrgsolver.Solve();
 
