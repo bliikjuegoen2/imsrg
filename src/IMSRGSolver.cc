@@ -154,7 +154,7 @@ void IMSRGSolver::Reset()
   NewOmega();
 }
 
-void IMSRGSolver::SetCasmir(Operator &&new_G) {
+void IMSRGSolver::SetCasmir(Operator new_G) {
 
   G = std::move(new_G);
 
