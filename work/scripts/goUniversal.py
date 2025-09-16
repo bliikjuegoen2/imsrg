@@ -222,10 +222,10 @@ for Z in range(4, 5):
 
                 # EM(1.8/2.0)
                 ARGS["2bme"] = (
-                    "/project/def-holt/shared/me2j/TwBME-HO_NN-only_N3LO_EM500_srg1.80_hw16_emax18_e2max36.me2j.gz"
+                    "/project/rrg-holt/shared/me2j/TwBME-HO_NN-only_N3LO_EM500_srg1.80_hw16_emax18_e2max36.me2j.gz"
                 )
                 ARGS["3bme"] = (
-                    "/project/def-holt/shared/me3j/NO2B_ThBME_EM1.8_2.0_3NFJmax15_IS_hw16_ms18_36_24.stream.bin"
+                    "/project/rrg-holt/shared/me3j/NO2B_ThBME_EM1.8_2.0_3NFJmax15_IS_hw16_ms18_36_24.stream.bin"
                 )
                 ARGS["LECs"] = "EM1.8_2.0"
 
