@@ -73,7 +73,7 @@ class Generator
 
 
 
-  void SetCasmir(const Operator& new_G);
+  void SetCasimir(const Operator& new_G);
   void ConstructGenerator_IrrepUnmixing();
   void ConstructGenerator_SingleRef(std::function<double (double,double)>& etafunc );
   void ConstructGenerator_SingleRef_3body(std::function<double (double,double)>& etafunc );
