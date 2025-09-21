@@ -260,17 +260,18 @@ double Generator::Get2bDenominator_Jdep(int ch, int ibra, int iket)
 
 
 
-void Generator::SetCasmir(const Operator &new_G) {
+void Generator::SetCasimir(const Operator &new_G) {
    G = &new_G;
 }
 
 void Generator::ConstructGenerator_IrrepUnmixing() {
 
     if (G == nullptr) {
-        std::cout << "[Error] : Casmir Operator is set to null! Set Casmir Operator for Irrep Unmixing!" << std::endl;
+        std::cout << "[Error] : Casimir Operator is set to null! Set Casimir Operator for Irrep Unmixing!" << std::endl;
         return;
     }
 
+    // [[[G,H],H],G]
     Operator new_Eta = Commutator::Commutator(
         Commutator::Commutator(
             Commutator::Commutator(*G, *H),
@@ -652,7 +653,7 @@ void Generator::ConstructGenerator_1PA(std::function<double(double,double)>& eta
 
 Operator Generator::GetHod_IrrepUnmixing(Operator &H) {
     if (G == nullptr) {
-        std::cout << "[Error] : Casmir Operator is set to null! Set Casmir Operator for Irrep Unmixing!" << std::endl;
+        std::cout << "[Error] : Casimir Operator is set to null! Set Casimir Operator for Irrep Unmixing!" << std::endl;
         return H;
     }
 
