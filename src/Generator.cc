@@ -280,6 +280,10 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
         *G
     );
 
+    double norm = new_Eta.Norm();
+
+    new_Eta /= norm;
+
     *Eta = std::move(new_Eta);
 }
 
@@ -659,7 +663,12 @@ Operator Generator::GetHod_IrrepUnmixing(Operator &H) {
 
     // I am assuming the main property we care about for Hod is that -> 0
 
+
     Operator Hod = Commutator::Commutator(*G, H);
+
+    double norm = Hod.Norm();
+
+    Hod /= norm;
 
     return std::move(Hod);
 }
