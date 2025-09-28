@@ -1091,7 +1091,7 @@ int main(int argc, char** argv)
   }
 
   if(casimir != "") {
-    std::cout << "reading casimir: " << casimir << ";" std::endl;
+    std::cout << "reading casimir: " << casimir << ";" << std::endl;
     // might be modelspace_imsrg? all other instances used modelspace
     // G = -casmir operator from the Johnson paper
     Operator G = -rw.ReadOperator2b_Miyagi(casimir, modelspace);
