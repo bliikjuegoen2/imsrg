@@ -1091,6 +1091,7 @@ int main(int argc, char** argv)
   }
 
   if(casimir != "") {
+    std::cout << "reading casimir" << std::endl;
     // might be modelspace_imsrg? all other instances used modelspace
     // G = -casmir operator from the Johnson paper
     Operator G = -rw.ReadOperator2b_Miyagi(casimir, modelspace);
@@ -1432,6 +1433,7 @@ int main(int argc, char** argv)
           if (opff.file2name != "")
           {
             Operator optmp = rw.ReadOperator2b_Miyagi(opff.file2name, modelspace);
+            std::cout << "set 2bme" << std::endl;
             op.TwoBody = optmp.TwoBody;
           }
           std::cout << "read 3b" << opff.file3name << std::endl;
