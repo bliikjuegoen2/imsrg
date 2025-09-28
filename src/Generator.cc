@@ -290,7 +290,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
 
     new_Eta /= eta_norm + 1e-100;
 
-    std::cout << "Norm:\t|[G, H]| = " << std::setprecision(9) << commutator_norm << ";\t|Eta| = " << eta_norm << ";" << std::endl;
+    std::cout << std::scientific << std::setprecision(9) << "Norm:\t|[G, H]| = " << commutator_norm << ";\t|Eta| = " << eta_norm << ";" << std::endl;
 
     *Eta = std::move(new_Eta);
 }
