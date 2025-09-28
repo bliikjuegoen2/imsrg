@@ -282,7 +282,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
 
     double norm = new_Eta.Norm();
 
-    new_Eta /= norm;
+    new_Eta /= norm + 1e-100;
 
     *Eta = std::move(new_Eta);
 }
@@ -668,7 +668,7 @@ Operator Generator::GetHod_IrrepUnmixing(Operator &H) {
 
     double norm = Hod.Norm();
 
-    Hod /= norm;
+    Hod /= norm + 1e-100;
 
     return std::move(Hod);
 }
