@@ -1429,14 +1429,11 @@ int main(int argc, char** argv)
         }
         else if ( input_op_fmt == "miyagi" )
         {
-          std::cout << "read 2b: " << opff.file2name << std::endl;
           if (opff.file2name != "")
           {
             Operator optmp = rw.ReadOperator2b_Miyagi(opff.file2name, modelspace);
-            std::cout << "set 2bme" << std::endl;
             op.TwoBody = optmp.TwoBody;
           }
-          std::cout << "read 3b" << opff.file3name << std::endl;
           if ( opff.r>2 and opff.file3name != "")  rw.Read_Darmstadt_3body( opff.file3name, op,  file3e1max,file3e2max,file3e3max);
         }
         count_from_file++;

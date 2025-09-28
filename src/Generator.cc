@@ -6,6 +6,7 @@
 
 #include "omp.h"
 #include <string>
+#include <iomanip>
 
 using PhysConst::M_NUCLEON;
 using PhysConst::HBARC;
@@ -271,18 +272,25 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
         return;
     }
 
+    // [G, H]
+    Operator G_lie_H = Commutator::Commutator(*G, *H);
+
+    double commutator_norm = G_lie_H.Norm();
+
     // [[[G,H],H],G]
     Operator new_Eta = Commutator::Commutator(
         Commutator::Commutator(
-            Commutator::Commutator(*G, *H),
+            std::move(G_lie_H),
             *H
         ),
         *G
     );
 
-    double norm = new_Eta.Norm();
+    double eta_norm = new_Eta.Norm();
 
-    new_Eta /= norm + 1e-100;
+    new_Eta /= eta_norm + 1e-100;
+
+    std::cout << "|[G, H]| =\t" << std::setprecision(9) << commutator_norm << "|Eta| =\t" << eta_norm << std::endl;
 
     *Eta = std::move(new_Eta);
 }
