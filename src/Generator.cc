@@ -282,7 +282,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
 
     double max_norm = H_norm*H_norm
         // *G_norm*G_norm
-        *2e-15;
+        *2e-04;
 
     // [[[G,H],H],G]
     Operator new_Eta = Commutator::Commutator(Commutator::Commutator(G_lie_H, *H), *G);
