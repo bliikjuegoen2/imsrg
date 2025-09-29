@@ -280,7 +280,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
 
     double commutator_norm = G_lie_H.Norm();
 
-    double max_norm = H_norm*H_norm*G_norm*G_norm*1e-10;
+    double max_norm = H_norm*H_norm*G_norm*G_norm*5e-15;
 
     // [[[G,H],H],G]
     Operator new_Eta = Commutator::Commutator(Commutator::Commutator(G_lie_H, *H), *G);
