@@ -1096,7 +1096,11 @@ int main(int argc, char** argv)
     // G = -casmir operator from the Johnson paper
     Operator G = -rw.ReadOperator2b_Miyagi(casimir, modelspace);
 
-    std::cout << "casimir file:\t" << casimir << ";" << std::endl;
+    double G_norm = G.Norm();
+
+    std::cout << "casimir file:\t" << casimir << ";\t|G| = " << G_norm << ";" << std::endl;
+
+    G /= G_norm;
 
     imsrgsolver.SetCasimir(std::move(G));
 
