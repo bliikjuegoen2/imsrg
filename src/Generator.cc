@@ -277,22 +277,17 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
 
     double commutator_norm = G_lie_H.Norm();
 
-    G_lie_H /= commutator_norm + 1e-100;
-
     // [[[G,H],H],G]
-    Operator new_Eta = Commutator::Commutator(
-        Commutator::Commutator(
-            std::move(G_lie_H),
-            *H
-        ),
-        *G
-    );
+    Operator new_Eta = Commutator::Commutator(Commutator::Commutator(G_lie_H, *H), *G);
 
     double eta_norm = new_Eta.Norm();
 
-    new_Eta /= eta_norm + 1e-100;
-
-    std::cout << std::scientific << std::setprecision(9) << "Norm:\t|[G, H]| = " << commutator_norm << ";\t|Eta| = " << eta_norm << ";" << std::endl;
+    std::cout << std::scientific << std::setprecision(9)
+              << "Norm:\t|[G, H]| = " << commutator_norm
+              << ";\t|Eta| = " << eta_norm
+              << ";\t|H| = " << H->Norm()
+              << ";\t|G| = " << G->Norm()
+              << ";" << std::endl;
 
     *Eta = std::move(new_Eta);
 }
