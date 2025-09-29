@@ -3354,7 +3354,7 @@ namespace Commutator
   // k|  l|
   //
   //
-  //  Checked with UnitTest and passed.
+  //  Checked with UnitTest and passed. BUT THE UNDERLYING EXPRESSION HAD AN OVERALL MINUS SIGN ERROR. CORRECTED ON Sep 3 2025
   //
   void comm332_ppph_hhhpss(const Operator &X, const Operator &Y, Operator &Z)
   {
@@ -3430,7 +3430,8 @@ namespace Commutator
             double nd = od.occ;
             //          double d_ed = std::abs( 2*od.n + od.l - e_fermi[od.tz2]);
             //          double occnat_d = od.occ_nat;
-            double occfactor = occ_abc * (1 - nd) - occ_abc_bar * nd;
+//            double occfactor = occ_abc * (1 - nd) - occ_abc_bar * nd;
+            double occfactor = occ_abc_bar * nd - occ_abc * (1 - nd) ;  // Minus sign error corrected Sep 3 2025 (SRS)
             if (std::abs(occfactor) < 1e-6)
               continue;
             if ((std::abs(2 * J - od.j2) > twoJ) or (2 * J + od.j2) < twoJ)
@@ -4942,7 +4943,6 @@ namespace Commutator
     if ((std::abs(X2.Norm() * Y2.Norm()) < 1e-6) and not Z.modelspace->scalar3b_transform_first_pass)
       return;
 
-//    std::cout << "Z particle rank = " << Z.GetParticleRank() << "   is Z3 allocated? " << Z3.IsAllocated() << std::endl;
 
     Z.modelspace->PreCalculateSixJ(); // If we already did this, this does nothing.
 
@@ -5235,7 +5235,6 @@ namespace Commutator
 
 
                       } // for a
-                        //                }// for j2a
                     }   // for it_obc
                   }     // for J2p
                 }       // for tz2a
@@ -5286,7 +5285,7 @@ namespace Commutator
     }
 
     Z.profiler.timer[__func__] += omp_get_wtime() - tstart;
-  }
+  }// comm223ss
 
 
 
