@@ -134,11 +134,15 @@ Operator read_operator(
   }
   else if ( input_op_fmt == "miyagi" )
   {
+    std::cout << "is miyagi" << std::endl;
+    std::cout << "two body from:\t" << opff.file2name << ";" << std::endl;
     if (opff.file2name != "")
     {
       Operator optmp = rw.ReadOperator2b_Miyagi(opff.file2name, modelspace);
+      std::cout << "set two body" << std::endl;
       op.TwoBody = optmp.TwoBody;
     }
+    std::cout << "three body from:\t" << opff.file3name << ";" << std::endl;
     if ( opff.r>2 and opff.file3name != "")  rw.Read_Darmstadt_3body( opff.file3name, op,  file3e1max,file3e2max,file3e3max);
   }
   return op;
@@ -1112,6 +1116,7 @@ int main(int argc, char** argv)
   if(casimir != "") {
     std::cout << "reading casimir" << std::endl;
     auto casimir_metadata = get_op_metadata(casimir);
+    std::cout << "retrieved casimir metadata" << std::endl;
     // might be modelspace_imsrg? all other instances used modelspace
     // G = -casmir operator from the Johnson paper
     Operator G = -read_operator(casimir_metadata, modelspace, rw, input_op_fmt,file3e1max, file3e2max, file3e3max);
