@@ -6212,6 +6212,14 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
       }
     }
   }
+
+  std::cout << "after first loop:\t"
+            << orbits_remap.size() << "; "
+            << energy_vals.size() << "; "
+            << n_vals.size() << "; "
+            << l_vals.size() << "; "
+            << j_vals.size() << "; " << std::endl;
+
   int nljmax = orbits_remap.size()-1;
   float obme_pp,obme_nn,obme_np,obme_pn;
   for(int nlj1=0; nlj1<=nljmax; ++nlj1) {
