@@ -63,6 +63,87 @@ struct OpFromFile {
    int j,p,t,r; // J rank, parity, dTz, particle rank
 };
 
+OpFromFile get_op_metadata(std::string tag) {
+
+    std::istringstream ss(tag);
+    std::string opname,qnumbers,f2name,f3name="";
+
+    OpFromFile opff;
+
+    getline(ss,opname,'^');
+    getline(ss,qnumbers,'^');
+    getline(ss,f2name,'^');
+    if ( not ss.eof() )  getline(ss,f3name,'^');
+    opff.opname = opname;
+    opff.file2name = f2name;
+    opff.file3name = f3name;
+
+    ss.str(qnumbers);
+    ss.clear();
+    std::string tmp;
+    getline(ss,tmp,'_');
+    std::istringstream(tmp) >> opff.j;
+    getline(ss,tmp,'_');
+    std::istringstream(tmp) >> opff.t;
+    getline(ss,tmp,'_');
+    std::istringstream(tmp) >> opff.p;
+    getline(ss,tmp,'_');
+    std::istringstream(tmp) >> opff.r;
+
+    std::cout << "Parsed tag. opname = " << opff.opname << "  " << opff.j << " " << opff.t << " " << opff.p << " " << opff.r << "   file2 = " << opff.file2name   << "    file3 = " << opff.file3name << std::endl;
+
+    // now make sure the files exist before we add them to the list.
+
+//     if( not std::ifstream(f2name).good() )
+    if( not std::ifstream(opff.file2name).good() )
+    {
+//       std::cout << "trouble reading " << f2name << " exiting. " << std::endl;
+      std::cout << "trouble reading " << opff.file2name << " exiting. " << std::endl;
+      exit(1);
+    }
+
+    if ( opff.file3name != "") // is there a 3-body file too?
+    {
+//       getline(ss,f3name,'^');
+//       if( not std::ifstream(f3name).good() )
+      if( not std::ifstream(opff.file3name).good() )
+      {
+        std::cout << "trouble reading " << opff.file3name << " exiting. " << std::endl;
+//         std::cout << "trouble reading " << f3name << " exiting. " << std::endl;
+        exit(1);
+      }
+    }
+
+    return opff;
+}
+
+Operator read_operator(
+    const OpFromFile& opff,
+    ModelSpace& modelspace,
+    ReadWrite& rw,
+    std::string input_op_fmt,
+    int file3e1max,
+    int file3e2max,
+    int file3e3max)
+{
+  Operator op(modelspace, opff.j, opff.t, opff.p, opff.r );
+  if (opff.r>2) op.ThreeBody.Allocate();
+  if ( input_op_fmt == "navratil" )
+  {
+    rw.Read2bCurrent_Navratil( opff.file2name, op );
+  }
+  else if ( input_op_fmt == "miyagi" )
+  {
+    if (opff.file2name != "")
+    {
+      Operator optmp = rw.ReadOperator2b_Miyagi(opff.file2name, modelspace);
+      op.TwoBody = optmp.TwoBody;
+    }
+    if ( opff.r>2 and opff.file3name != "")  rw.Read_Darmstadt_3body( opff.file3name, op,  file3e1max,file3e2max,file3e3max);
+  }
+  return op;
+}
+
 int main(int argc, char** argv)
 {
   // Default parameters, and everything passed by command line args.
@@ -203,56 +284,8 @@ int main(int argc, char** argv)
   // If we're reading in other operators, make sure those are ok too
   for (auto& tag : opsfromfile)
   {
-     std::istringstream ss(tag);
-     std::string opname,qnumbers,f2name,f3name="";
-
-     OpFromFile opff;
-  
-     getline(ss,opname,'^');
-     getline(ss,qnumbers,'^');
-     getline(ss,f2name,'^');
-     if ( not ss.eof() )  getline(ss,f3name,'^');
-     opff.opname = opname;
-     opff.file2name = f2name;
-     opff.file3name = f3name;
-
-      ss.str(qnumbers);
-      ss.clear();
-      std::string tmp;
-      getline(ss,tmp,'_');
-      std::istringstream(tmp) >> opff.j;
-      getline(ss,tmp,'_');
-      std::istringstream(tmp) >> opff.t;
-      getline(ss,tmp,'_');
-      std::istringstream(tmp) >> opff.p;
-      getline(ss,tmp,'_');
-      std::istringstream(tmp) >> opff.r;
-      
-      std::cout << "Parsed tag. opname = " << opff.opname << "  " << opff.j << " " << opff.t << " " << opff.p << " " << opff.r << "   file2 = " << opff.file2name   << "    file3 = " << opff.file3name << std::endl;
-
-      // now make sure the files exist before we add them to the list.
-
-//     if( not std::ifstream(f2name).good() )
-     if( not std::ifstream(opff.file2name).good() )
-     {
-//       std::cout << "trouble reading " << f2name << " exiting. " << std::endl;
-       std::cout << "trouble reading " << opff.file2name << " exiting. " << std::endl;
-       return 1;
-     }
-
-     if ( opff.file3name != "") // is there a 3-body file too?
-     {
-//       getline(ss,f3name,'^');
-//       if( not std::ifstream(f3name).good() )
-       if( not std::ifstream(opff.file3name).good() )
-       {
-         std::cout << "trouble reading " << opff.file3name << " exiting. " << std::endl;
-//         std::cout << "trouble reading " << f3name << " exiting. " << std::endl;
-         return 1;
-       }
-     }
      // if the files look good, then add it to the list
-     opsfromfile_unpacked.push_back( opff );
+     opsfromfile_unpacked.push_back( get_op_metadata(tag) );
   }
 
 
@@ -783,21 +816,7 @@ int main(int argc, char** argv)
 
     for ( auto& opff : opsfromfile_unpacked)
     {
-      Operator op(modelspace, opff.j, opff.t, opff.p, opff.r );
-      if (opff.r>2) op.ThreeBody.Allocate();
-      if ( input_op_fmt == "navratil" )
-      {
-        rw.Read2bCurrent_Navratil( opff.file2name, op );
-      }
-      else if ( input_op_fmt == "miyagi" )
-      {
-        if (opff.file2name != "")
-        {
-          Operator optmp = rw.ReadOperator2b_Miyagi(opff.file2name, modelspace);
-          op.TwoBody = optmp.TwoBody;
-        }
-        if ( opff.r>2 and opff.file3name != "")  rw.Read_Darmstadt_3body( opff.file3name, op,  file3e1max,file3e2max,file3e3max);
-      }
+      auto op = read_operator(opff, modelspace, rw, input_op_fmt, file3e1max, file3e2max, file3e3max);
       ops.push_back( op );
       opnames.push_back( opff.opname );
     }
@@ -1092,13 +1111,14 @@ int main(int argc, char** argv)
 
   if(casimir != "") {
     std::cout << "reading casimir" << std::endl;
+    auto casimir_metadata = get_op_metadata(casimir);
     // might be modelspace_imsrg? all other instances used modelspace
     // G = -casmir operator from the Johnson paper
-    Operator G = -rw.ReadOperator2b_Miyagi(casimir, modelspace);
+    Operator G = -read_operator(casimir_metadata, modelspace, rw, input_op_fmt,file3e1max, file3e2max, file3e3max);
 
     double G_norm = G.Norm();
 
-    std::cout << "casimir file:\t" << casimir << ";\t|G| = " << G_norm << ";" << std::endl;
+    std::cout << std::scientific << std::setprecision(9) << "casimir file:\t" << casimir << ";\t|G| = " << G_norm << ";" << std::endl;
 
     G /= G_norm;
 
