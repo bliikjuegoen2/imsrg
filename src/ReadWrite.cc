@@ -6240,9 +6240,6 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
       op.OneBody(ip,jn) = obme_pn;
     }
   }
-
-  std::cout << "after second loop" << std::endl;
-
   float me_pppp, me_pppn, me_ppnp, me_ppnn, me_pnpn;
   float me_pnnp, me_pnnn, me_npnp, me_npnn, me_nnnn;
   for(int nlj1=0; nlj1<=nljmax; ++nlj1) {
@@ -6264,28 +6261,41 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
           for(int Jij=std::abs(j_vals[nlj1]-j_vals[nlj2])/2; Jij<=(j_vals[nlj1]+j_vals[nlj2])/2; ++Jij){
             for(int Jkl=std::abs(j_vals[nlj3]-j_vals[nlj4])/2; Jkl<=(j_vals[nlj3]+j_vals[nlj4])/2; ++Jkl){
               if( not AngMom::Triangle( Jij, Jkl, op.rank_J ) ) continue;
-              zipstream >> me_pppp >> me_pppn >> me_ppnp >> me_ppnn >> me_pnpn;
-              zipstream >> me_pnnp >> me_pnnn >> me_npnp >> me_npnn >> me_nnnn;
-              // std::cout << nlj1 << " " << nlj2 << " " << nlj3 << " " << nlj4 << " " << Jij << " " << Jkl << " " <<
-              //  me_pppp << " " << me_pppn << " " << me_ppnp << " " << me_ppnn << " " << me_pnpn << " " <<
-              //  me_pnnp << " " << me_pnnn << " " << me_npnp << " " << me_npnn << " " << me_nnnn << std::endl;
-              if( energy_vals[nlj1] > modelspace.GetEmax() ) continue;
-              if( energy_vals[nlj2] > modelspace.GetEmax() ) continue;
-              if( energy_vals[nlj3] > modelspace.GetEmax() ) continue;
-              if( energy_vals[nlj4] > modelspace.GetEmax() ) continue;
 
-              if( std::abs(me_pppp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kp, lp, me_pppp);
-              if( std::abs(me_nnnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jn, kn, ln, me_nnnn);
-              if( std::abs(me_pnpn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kp, ln, me_pnpn);
-              if( std::abs(me_pnnp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kn, lp, me_pnnp);
-              if( std::abs(me_npnp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jp, kn, lp, me_npnp);
+              try {
 
-              if( std::abs(me_pppn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kp, ln, me_pppn);
-              if( std::abs(me_ppnp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kn, lp, me_ppnp);
-              if( std::abs(me_pnnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kn, ln, me_pnnn);
-              if( std::abs(me_npnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jp, kn, ln, me_npnn);
-              if( std::abs(me_ppnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kn, ln, me_ppnn);
+                zipstream >> me_pppp >> me_pppn >> me_ppnp >> me_ppnn >> me_pnpn;
+                zipstream >> me_pnnp >> me_pnnn >> me_npnp >> me_npnn >> me_nnnn;
+                // std::cout << nlj1 << " " << nlj2 << " " << nlj3 << " " << nlj4 << " " << Jij << " " << Jkl << " " <<
+                //  me_pppp << " " << me_pppn << " " << me_ppnp << " " << me_ppnn << " " << me_pnpn << " " <<
+                //  me_pnnp << " " << me_pnnn << " " << me_npnp << " " << me_npnn << " " << me_nnnn << std::endl;
+                if( energy_vals[nlj1] > modelspace.GetEmax() ) continue;
+                if( energy_vals[nlj2] > modelspace.GetEmax() ) continue;
+                if( energy_vals[nlj3] > modelspace.GetEmax() ) continue;
+                if( energy_vals[nlj4] > modelspace.GetEmax() ) continue;
 
+                if( std::abs(me_pppp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kp, lp, me_pppp);
+                if( std::abs(me_nnnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jn, kn, ln, me_nnnn);
+                if( std::abs(me_pnpn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kp, ln, me_pnpn);
+                if( std::abs(me_pnnp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kn, lp, me_pnnp);
+                if( std::abs(me_npnp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jp, kn, lp, me_npnp);
+
+                if( std::abs(me_pppn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kp, ln, me_pppn);
+                if( std::abs(me_ppnp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kn, lp, me_ppnp);
+                if( std::abs(me_pnnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kn, ln, me_pnnn);
+                if( std::abs(me_npnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jp, kn, ln, me_npnn);
+                if( std::abs(me_ppnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kn, ln, me_ppnn);
+
+              } catch (const std::out_of_range &e) {
+                std::cout << "caught exception: " << e.what() << std::endl;
+                std::cout << Jij << "\t" << Jkl
+                          << "\t" << ip << "\t" << in
+                          << "\t" << jp << "\t" << jn
+                          << "\t" << kp << "\t" << kn
+                          << "\t" << lp << "\t" << ln
+                  << std::endl;
+                exit(1);
+              }
           }
           }
         }
@@ -6293,7 +6303,6 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
 
     }
   }
-  std::cout << "after third loop" << std::endl;
   return op;
 }
 

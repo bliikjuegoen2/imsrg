@@ -1134,7 +1134,7 @@ int main(int argc, char** argv)
 
     } catch (const std::out_of_range &e){
       std::cout << "caught exception: " << e.what() << std::endl;
-      std::cerr << "Stack trace:\n" << boost::stacktrace::stacktrace() << std::endl;
+      std::cout << "Stack trace:\n" << boost::stacktrace::stacktrace() << std::endl;
       exit(1);
     }
 
