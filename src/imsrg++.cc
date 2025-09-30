@@ -57,6 +57,7 @@
 #include "Parameters.hh"
 #include "PhysicalConstants.hh"
 #include "version.hh"
+#include <boost/stacktrace.hpp>
 
 struct OpFromFile {
    std::string file2name,file3name,opname;
@@ -1114,20 +1115,28 @@ int main(int argc, char** argv)
   }
 
   if(casimir != "") {
-    std::cout << "reading casimir" << std::endl;
-    auto casimir_metadata = get_op_metadata(casimir);
-    std::cout << "retrieved casimir metadata" << std::endl;
-    // might be modelspace_imsrg? all other instances used modelspace
-    // G = -casmir operator from the Johnson paper
-    Operator G = -read_operator(casimir_metadata, modelspace, rw, input_op_fmt,file3e1max, file3e2max, file3e3max);
+    try{
 
-    double G_norm = G.Norm();
+      std::cout << "reading casimir" << std::endl;
+      auto casimir_metadata = get_op_metadata(casimir);
+      std::cout << "retrieved casimir metadata" << std::endl;
+      // might be modelspace_imsrg? all other instances used modelspace
+      // G = -casmir operator from the Johnson paper
+      Operator G = -read_operator(casimir_metadata, modelspace, rw, input_op_fmt,file3e1max, file3e2max, file3e3max);
 
-    std::cout << std::scientific << std::setprecision(9) << "casimir file:\t" << casimir << ";\t|G| = " << G_norm << ";" << std::endl;
+      double G_norm = G.Norm();
 
-    G /= G_norm;
+      std::cout << std::scientific << std::setprecision(9) << "casimir file:\t" << casimir << ";\t|G| = " << G_norm << ";" << std::endl;
 
-    imsrgsolver.SetCasimir(std::move(G));
+      G /= G_norm;
+
+      imsrgsolver.SetCasimir(std::move(G));
+
+    } catch (const std::out_of_range &e){
+      std::cout << "caught exception: " << e.what() << std::endl;
+      std::cerr << "Stack trace:\n" << boost::stacktrace::stacktrace() << std::endl;
+      exit(1);
+    }
 
   }
 
