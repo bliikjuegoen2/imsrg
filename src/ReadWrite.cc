@@ -6301,12 +6301,9 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
                           << "\t" << kp << "\t" << kn
                           << "\t" << lp << "\t" << ln
                   << std::endl;
-                std::cout << me_pppp << "\t" << me_nnnn
-                          << "\t" << me_pnpn << "\t" << me_pnnp
-                          << "\t" << me_npnp << "\t" << me_pppn
-                          << "\t" << me_ppnp << "\t" << me_pnnn
-                          << "\t" << me_npnn << "\t" << me_ppnn
-                  << std::endl;
+                std::cout << nlj1 << " " << nlj2 << " " << nlj3 << " " << nlj4 << " " << Jij << " " << Jkl << " " <<
+                 me_pppp << " " << me_pppn << " " << me_ppnp << " " << me_ppnn << " " << me_pnpn << " " <<
+                 me_pnnp << " " << me_pnnn << " " << me_npnp << " " << me_npnn << " " << me_nnnn << std::endl;
                 exit(1);
               }
           }
