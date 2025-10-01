@@ -6189,6 +6189,7 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
   std::cout << J << " " << Z << " " << (1-P)/2 << " " << emax << " " << e2max << std::endl;
   Operator op = Operator(modelspace, J, Z, (1-P)/2, 2);
   zipstream >> op.ZeroBody;
+  std::cout << "zero body:\t" << op.ZeroBody << std::endl;
   std::vector<int> orbits_remap;
   std::vector<int> energy_vals;
   std::vector<int> n_vals;
@@ -6231,7 +6232,7 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
       if( (l_vals[nlj1]+l_vals[nlj2]+op.parity)%2 == 1 ) continue;
       if( not AngMom::Triangle( j_vals[nlj1], j_vals[nlj2], 2*op.rank_J ) ) continue;
       zipstream >> obme_pp >> obme_nn >> obme_np >> obme_pn;
-      // std::cout << nlj1 << " " << nlj2 << " " << obme_pp << " " << obme_nn << " " << obme_np << " " << obme_pn  << std::endl;
+      std::cout << nlj1 << " " << nlj2 << " " << obme_pp << " " << obme_nn << " " << obme_np << " " << obme_pn  << std::endl;
       if( energy_vals[nlj1] > modelspace.GetEmax() ) continue;
       if( energy_vals[nlj2] > modelspace.GetEmax() ) continue;
       op.OneBody(ip,jp) = obme_pp;
@@ -6267,9 +6268,9 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
 
               try {
 
-                // std::cout << nlj1 << " " << nlj2 << " " << nlj3 << " " << nlj4 << " " << Jij << " " << Jkl << " " <<
-                //  me_pppp << " " << me_pppn << " " << me_ppnp << " " << me_ppnn << " " << me_pnpn << " " <<
-                //  me_pnnp << " " << me_pnnn << " " << me_npnp << " " << me_npnn << " " << me_nnnn << std::endl;
+                std::cout << nlj1 << " " << nlj2 << " " << nlj3 << " " << nlj4 << " " << Jij << " " << Jkl << " " <<
+                 me_pppp << " " << me_pppn << " " << me_ppnp << " " << me_ppnn << " " << me_pnpn << " " <<
+                 me_pnnp << " " << me_pnnn << " " << me_npnp << " " << me_npnn << " " << me_nnnn << std::endl;
                 if( energy_vals[nlj1] > modelspace.GetEmax() ) continue;
                 if( energy_vals[nlj2] > modelspace.GetEmax() ) continue;
                 if( energy_vals[nlj3] > modelspace.GetEmax() ) continue;
