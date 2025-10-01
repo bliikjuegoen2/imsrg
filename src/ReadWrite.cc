@@ -6241,6 +6241,7 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
       op.OneBody(ip,jn) = obme_pn;
     }
   }
+  std::cout << "after second loop\t" << std::endl;
   float me_pppp, me_pppn, me_ppnp, me_ppnn, me_pnpn;
   float me_pnnp, me_pnnn, me_npnp, me_npnn, me_nnnn;
   for(int nlj1=0; nlj1<=nljmax; ++nlj1) {
@@ -6276,6 +6277,8 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
                 if( energy_vals[nlj3] > modelspace.GetEmax() ) continue;
                 if( energy_vals[nlj4] > modelspace.GetEmax() ) continue;
 
+                std::cout << "with in emax" << std::endl;
+
                 if( std::abs(me_pppp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kp, lp, me_pppp);
                 if( std::abs(me_nnnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jn, kn, ln, me_nnnn);
                 if( std::abs(me_pnpn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kp, ln, me_pnpn);
@@ -6287,6 +6290,8 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
                 if( std::abs(me_pnnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kn, ln, me_pnnn);
                 if( std::abs(me_npnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jp, kn, ln, me_npnn);
                 if( std::abs(me_ppnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kn, ln, me_ppnn);
+
+                std::cout << "set tbme" << std::endl;
 
               } catch (const std::out_of_range &e) {
                 std::cout << "caught exception: " << e.what() << std::endl;
