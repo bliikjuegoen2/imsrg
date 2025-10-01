@@ -6179,8 +6179,11 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
 
   std::string line;
   // std::cout << filename << std::endl;
+  std::cout << "header" << std::endl;
   getline(zipstream, line);
+  std::cout << line << std::endl;
   getline(zipstream, line);
+  std::cout << line << std::endl;
   // std::cout<< line << std::endl;
   int J = 0, P = 0, Z = 0;
   int emax = modelspace.GetEmax(), e2max = modelspace.GetE2max();
