@@ -6157,8 +6157,14 @@ void ReadWrite::skip_comments(std::ifstream& in)
   }
 }
 
-
-
+// helper function to test if stream is valid
+void ReadWrite::validate_stream(const std::istream& zipstream) {
+  if (! zipstream) {
+    std::cerr << "EOF, failed to read stream" << std::endl;
+    goodstate = false;
+    exit(0);
+  }
+}
 
 /// Method added by Takayuki Miyagi.
 ///
@@ -6178,21 +6184,24 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
   zipstream.push(infile);
 
   std::string line;
-  // std::cout << filename << std::endl;
-  std::cout << "header" << std::endl;
+  std::cout << "Reading me2j operator from: " << filename << std::endl;
+
+  validate_stream(zipstream);
   getline(zipstream, line);
-  std::cout << line << std::endl;
   getline(zipstream, line);
-  std::cout << line << std::endl;
-  // std::cout<< line << std::endl;
+  std::cout << "Read header: " << line << std::endl;
+
   int J = 0, P = 0, Z = 0;
   int emax = modelspace.GetEmax(), e2max = modelspace.GetE2max();
   std::istringstream tmp( line.c_str() );
   tmp >> J >> P >> Z >> emax >> e2max;
   std::cout << J << " " << Z << " " << (1-P)/2 << " " << emax << " " << e2max << std::endl;
   Operator op = Operator(modelspace, J, Z, (1-P)/2, 2);
+
+  validate_stream(zipstream);
   zipstream >> op.ZeroBody;
-  std::cout << "zero body:\t" << op.ZeroBody << std::endl;
+  std::cout << "Read zero body: " << op.ZeroBody << std::endl;
+
   std::vector<int> orbits_remap;
   std::vector<int> energy_vals;
   std::vector<int> n_vals;
@@ -6216,15 +6225,9 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
       }
     }
   }
-
-  std::cout << "after first loop:\t"
-            << orbits_remap.size() << "; "
-            << energy_vals.size() << "; "
-            << n_vals.size() << "; "
-            << l_vals.size() << "; "
-            << j_vals.size() << "; " << std::endl;
-
   int nljmax = orbits_remap.size()-1;
+  std::cout << "Compute indices" << std::endl;
+
   float obme_pp,obme_nn,obme_np,obme_pn;
   for(int nlj1=0; nlj1<=nljmax; ++nlj1) {
     int ip = modelspace.GetOrbitIndex( n_vals[nlj1], l_vals[nlj1], j_vals[nlj1], -1 );
@@ -6234,8 +6237,10 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
       int jn = modelspace.GetOrbitIndex( n_vals[nlj2], l_vals[nlj2], j_vals[nlj2],  1 );
       if( (l_vals[nlj1]+l_vals[nlj2]+op.parity)%2 == 1 ) continue;
       if( not AngMom::Triangle( j_vals[nlj1], j_vals[nlj2], 2*op.rank_J ) ) continue;
+
+      validate_stream(zipstream);
       zipstream >> obme_pp >> obme_nn >> obme_np >> obme_pn;
-      std::cout << nlj1 << " " << nlj2 << " " << obme_pp << " " << obme_nn << " " << obme_np << " " << obme_pn  << std::endl;
+      // std::cout << nlj1 << " " << nlj2 << " " << obme_pp << " " << obme_nn << " " << obme_np << " " << obme_pn  << std::endl;
       if( energy_vals[nlj1] > modelspace.GetEmax() ) continue;
       if( energy_vals[nlj2] > modelspace.GetEmax() ) continue;
       op.OneBody(ip,jp) = obme_pp;
@@ -6244,7 +6249,8 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
       op.OneBody(ip,jn) = obme_pn;
     }
   }
-  std::cout << "after second loop\t" << std::endl;
+
+  std::cout << "Load OBME" << std::endl;
   float me_pppp, me_pppn, me_ppnp, me_ppnn, me_pnpn;
   float me_pnnp, me_pnnn, me_npnp, me_npnn, me_nnnn;
   for(int nlj1=0; nlj1<=nljmax; ++nlj1) {
@@ -6267,48 +6273,29 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
             for(int Jkl=std::abs(j_vals[nlj3]-j_vals[nlj4])/2; Jkl<=(j_vals[nlj3]+j_vals[nlj4])/2; ++Jkl){
               if( not AngMom::Triangle( Jij, Jkl, op.rank_J ) ) continue;
 
+              validate_stream(zipstream);
               zipstream >> me_pppp >> me_pppn >> me_ppnp >> me_ppnn >> me_pnpn;
               zipstream >> me_pnnp >> me_pnnn >> me_npnp >> me_npnn >> me_nnnn;
+              // std::cout << nlj1 << " " << nlj2 << " " << nlj3 << " " << nlj4 << " " << Jij << " " << Jkl << " " <<
+              //  me_pppp << " " << me_pppn << " " << me_ppnp << " " << me_ppnn << " " << me_pnpn << " " <<
+              //  me_pnnp << " " << me_pnnn << " " << me_npnp << " " << me_npnn << " " << me_nnnn << std::endl;
+              if( energy_vals[nlj1] > modelspace.GetEmax() ) continue;
+              if( energy_vals[nlj2] > modelspace.GetEmax() ) continue;
+              if( energy_vals[nlj3] > modelspace.GetEmax() ) continue;
+              if( energy_vals[nlj4] > modelspace.GetEmax() ) continue;
 
-              try {
+              if( std::abs(me_pppp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kp, lp, me_pppp);
+              if( std::abs(me_nnnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jn, kn, ln, me_nnnn);
+              if( std::abs(me_pnpn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kp, ln, me_pnpn);
+              if( std::abs(me_pnnp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kn, lp, me_pnnp);
+              if( std::abs(me_npnp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jp, kn, lp, me_npnp);
 
-                std::cout << nlj1 << " " << nlj2 << " " << nlj3 << " " << nlj4 << " " << Jij << " " << Jkl << " " <<
-                 me_pppp << " " << me_pppn << " " << me_ppnp << " " << me_ppnn << " " << me_pnpn << " " <<
-                 me_pnnp << " " << me_pnnn << " " << me_npnp << " " << me_npnn << " " << me_nnnn << std::endl;
-                if( energy_vals[nlj1] > modelspace.GetEmax() ) continue;
-                if( energy_vals[nlj2] > modelspace.GetEmax() ) continue;
-                if( energy_vals[nlj3] > modelspace.GetEmax() ) continue;
-                if( energy_vals[nlj4] > modelspace.GetEmax() ) continue;
+              if( std::abs(me_pppn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kp, ln, me_pppn);
+              if( std::abs(me_ppnp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kn, lp, me_ppnp);
+              if( std::abs(me_pnnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kn, ln, me_pnnn);
+              if( std::abs(me_npnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jp, kn, ln, me_npnn);
+              if( std::abs(me_ppnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kn, ln, me_ppnn);
 
-                std::cout << "with in emax" << std::endl;
-
-                if( std::abs(me_pppp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kp, lp, me_pppp);
-                if( std::abs(me_nnnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jn, kn, ln, me_nnnn);
-                if( std::abs(me_pnpn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kp, ln, me_pnpn);
-                if( std::abs(me_pnnp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kn, lp, me_pnnp);
-                if( std::abs(me_npnp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jp, kn, lp, me_npnp);
-
-                if( std::abs(me_pppn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kp, ln, me_pppn);
-                if( std::abs(me_ppnp) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kn, lp, me_ppnp);
-                if( std::abs(me_pnnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jn, kn, ln, me_pnnn);
-                if( std::abs(me_npnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, in, jp, kn, ln, me_npnn);
-                if( std::abs(me_ppnn) > 1.e-10 ) op.TwoBody.SetTBME_J(Jij, Jkl, ip, jp, kn, ln, me_ppnn);
-
-                std::cout << "set tbme" << std::endl;
-
-              } catch (const std::out_of_range &e) {
-                std::cout << "caught exception: " << e.what() << std::endl;
-                std::cout << Jij << "\t" << Jkl
-                          << "\t" << ip << "\t" << in
-                          << "\t" << jp << "\t" << jn
-                          << "\t" << kp << "\t" << kn
-                          << "\t" << lp << "\t" << ln
-                  << std::endl;
-                std::cout << nlj1 << " " << nlj2 << " " << nlj3 << " " << nlj4 << " " << Jij << " " << Jkl << " " <<
-                 me_pppp << " " << me_pppn << " " << me_ppnp << " " << me_ppnn << " " << me_pnpn << " " <<
-                 me_pnnp << " " << me_pnnn << " " << me_npnp << " " << me_npnn << " " << me_nnnn << std::endl;
-                exit(1);
-              }
           }
           }
         }
@@ -6316,8 +6303,12 @@ Operator ReadWrite::ReadOperator2b_Miyagi(std::string filename, ModelSpace& mode
 
     }
   }
+  std::cout << "Load TBME" << std::endl;
+  std::cout << "Done Loading: " << filename << std::endl;
   return op;
 }
+
+
 
 
 ///Method added by A.Belley to store omage to disk so that you can transform other operators later

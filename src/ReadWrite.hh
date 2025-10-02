@@ -145,6 +145,9 @@ class ReadWrite
    int Aref;
    int Zref;
 
+private:
+// helper function to test if stream is valid
+   void validate_stream(const std::istream& zipstream);
 
 };
 

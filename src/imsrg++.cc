@@ -146,6 +146,10 @@ Operator read_operator(
     std::cout << "three body from:\t" << opff.file3name << ";" << std::endl;
     if ( opff.r>2 and opff.file3name != "")  rw.Read_Darmstadt_3body( opff.file3name, op,  file3e1max,file3e2max,file3e3max);
   }
+  else {
+    std::cerr << "Unknown input_op_fmt = " << input_op_fmt << std::endl;
+    exit(1);
+  }
   return op;
 }
 
@@ -1115,28 +1119,24 @@ int main(int argc, char** argv)
   }
 
   if(casimir != "") {
-    try{
 
-      std::cout << "reading casimir" << std::endl;
-      auto casimir_metadata = get_op_metadata(casimir);
-      std::cout << "retrieved casimir metadata" << std::endl;
-      // might be modelspace_imsrg? all other instances used modelspace
-      // G = -casmir operator from the Johnson paper
-      Operator G = -read_operator(casimir_metadata, modelspace, rw, input_op_fmt,file3e1max, file3e2max, file3e3max);
+    std::cout << "reading casimir" << std::endl;
 
-      double G_norm = G.Norm();
+    auto casimir_metadata = get_op_metadata(casimir);
+    std::cout << "retrieved casimir metadata" << std::endl;
 
-      std::cout << std::scientific << std::setprecision(9) << "casimir file:\t" << casimir << ";\t|G| = " << G_norm << ";" << std::endl;
+    // might be modelspace_imsrg? all other instances used modelspace
+    // G = -casmir operator from the Johnson paper
+    Operator G = -read_operator(casimir_metadata, modelspace, rw, input_op_fmt,file3e1max, file3e2max, file3e3max);
 
-      G /= G_norm;
+    double G_norm = G.Norm();
 
-      imsrgsolver.SetCasimir(std::move(G));
+    std::cout << std::scientific << std::setprecision(9) << "casimir file:\t" << casimir << ";\t|G| = " << G_norm << ";" << std::endl;
 
-    } catch (const std::out_of_range &e){
-      std::cout << "caught exception: " << e.what() << std::endl;
-      std::cout << "Stack trace:\n" << boost::stacktrace::stacktrace() << std::endl;
-      exit(1);
-    }
+    G /= G_norm;
+
+    imsrgsolver.SetCasimir(std::move(G));
+
 
   }
 
