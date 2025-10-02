@@ -279,7 +279,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     Operator G_lie_H = Commutator::Commutator(*G, *H);
 
     // normalize commutator
-    G_lie_H /= G_norm * H_norm;
+    G_lie_H /= (G_norm * H_norm) + 1e-100;
 
     double G_lie_H_norm = G_lie_H.Norm();
 
@@ -287,7 +287,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     Operator new_Eta = Commutator::Commutator(Commutator::Commutator(G_lie_H, *H), *G);
 
     // normalize Eta
-    new_Eta /= H_norm * G_norm;
+    new_Eta /= (H_norm * G_norm) + 1e-100;
 
     double Eta_norm = new_Eta.Norm();
 
