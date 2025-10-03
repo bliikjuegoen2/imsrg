@@ -6159,7 +6159,7 @@ void ReadWrite::skip_comments(std::ifstream& in)
 
 // helper function to test if stream is valid
 void ReadWrite::validate_stream(const std::istream& zipstream) {
-  if (! zipstream) {
+  if (! zipstream.good() ) {
     std::cerr << "EOF, failed to read stream" << std::endl;
     goodstate = false;
     exit(0);
