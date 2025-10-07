@@ -1133,8 +1133,6 @@ int main(int argc, char** argv)
 
     std::cout << std::scientific << std::setprecision(9) << "casimir file:\t" << casimir << ";\t|G| = " << G_norm << ";" << std::endl;
 
-    G /= G_norm;
-
     imsrgsolver.SetCasimir(std::move(G));
 
 
