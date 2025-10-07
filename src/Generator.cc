@@ -269,6 +269,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
 
     if (G == nullptr) {
         std::cerr << "[Error] : Casimir Operator is set to null! Set Casimir Operator for Irrep Unmixing!" << std::endl;
+        *Eta = 0*(*H);
         return;
     }
 
@@ -670,7 +671,7 @@ void Generator::ConstructGenerator_1PA(std::function<double(double,double)>& eta
 Operator Generator::GetHod_IrrepUnmixing(Operator &H) {
     if (G == nullptr) {
         std::cerr << "[Error] : Casimir Operator is set to null! Set Casimir Operator for Irrep Unmixing!" << std::endl;
-        return H;
+        return 0*H;
     }
 
     // I am assuming the main property we care about for Hod is that -> 0
