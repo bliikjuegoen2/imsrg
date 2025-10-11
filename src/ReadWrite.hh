@@ -124,6 +124,11 @@ class ReadWrite
    Operator ReadOperator2b_Miyagi(std::string, ModelSpace &); // general operator me2j-like format
    void skip_comments(std::ifstream&);
 
+   Operator read_shell_me2j(std::string filename
+                            , ModelSpace &modelspace
+                            , int J, int Z, int P, int float_size
+                            , int n1max, int n2max);
+
 
    template <typename tDataType>
    void ReadBinary(std::istream& is, tDataType &data)
