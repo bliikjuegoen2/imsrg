@@ -1474,6 +1474,13 @@ int main(int argc, char** argv)
           }
           if ( opff.r>2 and opff.file3name != "")  rw.Read_Darmstadt_3body( opff.file3name, op,  file3e1max,file3e2max,file3e3max);
         }
+        else if (input_op_fmt == "shell") {
+          if (opff.file2name != "")
+          {
+            Operator optmp = rw.read_shell_me2j(opff.file2name, modelspace, opff.j, opff.t, opff.p, 8, modelspace.GetE2max(), modelspace.GetE2max());
+            op.TwoBody = optmp.TwoBody;
+          }
+        }
         count_from_file++;
         opname = opff.opname; // Get rid of the _FROMFILE bit.
       }
