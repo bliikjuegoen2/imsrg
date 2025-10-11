@@ -8,7 +8,9 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cstring>
 #include <chrono>
+#include <cassert>
 #include <ctime>
 #include <array>
 #include <map>
@@ -6158,8 +6160,8 @@ void ReadWrite::skip_comments(std::ifstream& in)
 }
 
 // helper function to test if stream is valid
-void ReadWrite::validate_stream(const std::istream& zipstream) {
-  if (! zipstream.good() ) {
+void ReadWrite::validate_stream(const std::istream& is) {
+  if (! is.good() ) {
     std::cerr << "EOF, failed to read stream" << std::endl;
     goodstate = false;
     exit(0);

@@ -125,6 +125,40 @@ class ReadWrite
    void skip_comments(std::ifstream&);
 
 
+   template <typename tDataType>
+   void ReadBinary(std::istream& is, tDataType &data)
+   // Read binary data item from stream.
+   //
+   // Arguments:
+   //   is (input): binary stream for input
+   //   data (output): data value read from stream
+   //
+   // Ex:
+   //   mcutils::ReadBinary<float>(in_stream,value);
+   {
+      static_assert(!std::is_pointer<tDataType>::value, "tDataType cannot be a pointer type");
+      validate_stream(is);
+      is.read(reinterpret_cast<char*>(&data),sizeof(data));
+   }
+
+
+   template <typename tDataType>
+   void ReadBinary(std::istream& is, tDataType* data_ptr, std::size_t count)
+   // Read binary data items from stream.
+   //
+   // Arguments:
+   //   is (input): binary stream for input
+   //   data_ptr (output): pointer to data read from stream
+   //   count (input): number of (contiguous) values to read
+   //
+   // Ex:
+   //   mcutils::ReadBinary<float>(in_stream, value_arr, dimension);
+   {
+      static_assert(!std::is_pointer<tDataType>::value, "tDataType cannot be a pointer type");
+      validate_stream(is);
+      is.read(reinterpret_cast<char*>(data_ptr), count*sizeof(*data_ptr));
+   }
+
 
    // added by A.Belley
 //   void WriteOmega(std::string filename, std::string scratch, int size);
@@ -147,7 +181,7 @@ class ReadWrite
 
 private:
 // helper function to test if stream is valid
-   void validate_stream(const std::istream& zipstream);
+   void validate_stream(const std::istream& is);
 
 };
 
