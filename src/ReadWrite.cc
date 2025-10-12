@@ -924,14 +924,14 @@ void ReadWrite::ReadBareTBME_Darmstadt_from_stream( T& infile, Operator& Hbare, 
 //          int Jmin = std::max( std::abs(o1.j2 - o2.j2), std::abs(o3.j2 - o4.j2) )/2;
 //          int Jmax = std::min(o1.j2 + o2.j2, o3.j2+o4.j2)/2;
           if (Jmin > Jmax) continue;
-          int num_prints = 0;
+
           for (int J=Jmin; J<=Jmax; ++J)
           {
 
              // File is read here.
              // Matrix elements are written in the file with (T,Tz) = (0,0) (1,1) (1,0) (1,-1)
             if(!infile.good()) {
-              std::cout << "EOF" << std::endl;
+              std::cout << "EOF; read:\t" << nreads*4 << std::endl;
               goodstate = false;
               exit(0);
             }
@@ -946,17 +946,6 @@ void ReadWrite::ReadBareTBME_Darmstadt_from_stream( T& infile, Operator& Hbare, 
              if (a==b)  norm_factor /= PhysConst::SQRT2;
              if (c==d)  norm_factor /= PhysConst::SQRT2;
 
-            if (tbme_00 != 0.0 || tbme_nn != 0.0 || tbme_10 != 0.0 || tbme_pp != 0.0) {
-              std::cout << "00:\t" << tbme_00*norm_factor
-                        << "\tnn:\t" << tbme_nn*norm_factor
-                        << "\t10:\t" << tbme_10*norm_factor
-                        << "\tpp:\t" << tbme_pp*norm_factor
-                << std::endl;
-
-              std::cout << "J:\t" << J << std::endl;
-              num_prints++;
-            }
-
              if (norm_factor>0.9 or J%2==0)
              {
                 Hbare.TwoBody.SetTBME(J,parity,-1,a,b,c,d,tbme_pp*norm_factor);
@@ -968,11 +957,6 @@ void ReadWrite::ReadBareTBME_Darmstadt_from_stream( T& infile, Operator& Hbare, 
                 Hbare.TwoBody.Set_pn_TBME_from_iso(J,0,0,a,b,c,d,tbme_00*norm_factor);
              }
 
-          }
-
-          if(num_prints != 0) {
-            std::cout << "abcd:\t" << a << "\t" << b << "\t" << c << "\t" << d << std::endl;
-            std::cout << "nlj:\t" << nlj1+1 << "\t" << nlj2+1 << "\t" << nlj3+1 << "\t" << nlj4+1 << std::endl;
           }
 
         }
