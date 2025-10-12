@@ -36,8 +36,8 @@ find_package(BLAS REQUIRED)
 find_package(GSL REQUIRED)
 find_package(Boost REQUIRED)
 find_package(ZLIB REQUIRED)
-# find_package(Armadillo REQUIRED)
-# include_directories(${ARMADILLO_INCLUDE_DIRS})
+find_package(Armadillo REQUIRED)
+include_directories(${ARMADILLO_INCLUDE_DIRS})
 
 
 add_compile_options(-frounding-math)
@@ -52,7 +52,7 @@ if(IMSRG_BUILD_PYTHON_BINDINGS)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 endif()
 
-add_subdirectory(extern/armadillo)
+# add_subdirectory(extern/armadillo)
 add_subdirectory(extern/half)
 
 add_subdirectory(extern/boost_src)
