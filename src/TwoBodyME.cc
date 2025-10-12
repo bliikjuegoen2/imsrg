@@ -106,7 +106,9 @@ void TwoBodyME::Allocate()
 //        if ( (tbc_bra.J+tbc_ket.J)<rank_J ) continue;
         if ( std::abs(tbc_bra.Tz-tbc_ket.Tz)!=rank_T ) continue; // we don't couple to T, so rank_T really means |delta Tz|
         if ( (tbc_bra.parity + tbc_ket.parity + parity)%2>0 ) continue;
-        MatEl.emplace({ch_bra,ch_ket}, {tbc_bra.GetNumberKets(), tbc_ket.GetNumberKets(), arma::fill::zeros});
+        MatEl.emplace<std::array<size_t,2>,arma::mat>(
+            {ch_bra,ch_ket}
+            , {tbc_bra.GetNumberKets(), tbc_ket.GetNumberKets(), arma::fill::zeros});
 
         // MatEl[{ch_bra,ch_ket}] =  arma::mat(tbc_bra.GetNumberKets(), tbc_ket.GetNumberKets(), arma::fill::zeros);
         std::cout << "construct < " << ch_bra << " | " << ch_ket << " >" << std::endl;
