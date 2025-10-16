@@ -6178,6 +6178,49 @@ void ReadWrite::validate_stream(const std::istream& is) {
   }
 }
 
+
+std::tuple<std::vector<int>, std::vector<int>, std::vector<int>, std::vector<int>> ReadWrite::get_quantum_numbers
+(
+  const ModelSpace &modelspace
+  , int Nmax
+  , int lmax
+)
+{
+  std::vector<int> orbits_remap;
+  std::vector<int> energy_vals;
+  std::vector<int> l_vals;
+  std::vector<int> j_vals;
+
+  for (int e=0; e<= Nmax; ++e)
+  {
+    int lmin = e%2;
+    for (int l=lmin; l<=std::min(e,lmax); l+=2)
+    {
+      int n = (e-l)/2;
+      int twojMin = std::abs(2*l-1);
+      int twojMax = 2*l+1;
+      for (int twoj=twojMin; twoj<=twojMax; twoj+=2)
+      {
+         orbits_remap.push_back( modelspace.GetOrbitIndex(n,l,twoj,-1) );
+//         Orbit& oi = modelspace->GetOrbit( orbits_remap.back() );
+         energy_vals.push_back( 2*n+l);
+         l_vals.push_back(l);
+         j_vals.push_back(twoj);
+         std::cout << "orbit:\t" << orbits_remap.back()
+                   << " energy:\t" << energy_vals.back()
+                   << " l:\t" << l_vals.back()
+                   << " j:\t" << j_vals.back() << std::endl;
+      }
+    }
+  }
+  return std::make_tuple(
+    std::move(orbits_remap)
+    , std::move(energy_vals)
+    , std::move(l_vals)
+    , std::move(j_vals)
+  );
+}
+
 Operator ReadWrite::read_shell_me2j(std::string filename
                                     , ModelSpace &modelspace
                                     , int J, int Z, int P
@@ -6208,7 +6251,19 @@ Operator ReadWrite::read_shell_me2j(std::string filename
 
   // test valid parameter
   assert((float_size == 4) || (float_size == 8));
-  assert((float_size == 8)); // only supports double remove once float support is implemented
+
+  auto read_me = [this, &zipstream, float_size]() {
+    if(float_size == 4) {
+      float matrix_element = -999;
+      ReadBinary<float>(zipstream, matrix_element);
+      return double(matrix_element);
+    }
+    else {
+      double matrix_element = -999;
+      ReadBinary<double>(zipstream, matrix_element);
+      return matrix_element;
+    }
+  };
 
   if (J!=0 || P!=0 || Z!=0) {
     std::cerr << "ERROR: Provided operator has unsupported (J0,g0,Tz0)!=(0,0,0)." << std::endl;
@@ -6235,40 +6290,29 @@ Operator ReadWrite::read_shell_me2j(std::string filename
 
   std::cout << J << " " << Z << " " << (1-P)/2 << " " << emax << " " << e2max << std::endl;
 
-
-
-  int norb = modelspace.GetNumberOrbits();
   std::vector<int> orbits_remap;
-
   std::vector<int> energy_vals;
   std::vector<int> l_vals;
   std::vector<int> j_vals;
 
-  for (int e=0; e<=n1max; ++e)
-  {
-    int lmin = e%2;
-    for (int l=lmin; l<=std::min(e,lmax); l+=2)
-    {
-      int n = (e-l)/2;
-      int twojMin = std::abs(2*l-1);
-      int twojMax = 2*l+1;
-      for (int twoj=twojMin; twoj<=twojMax; twoj+=2)
-      {
-         orbits_remap.push_back( modelspace.GetOrbitIndex(n,l,twoj,-1) );
-//         Orbit& oi = modelspace->GetOrbit( orbits_remap.back() );
-         energy_vals.push_back( 2*n+l);
-         l_vals.push_back(l);
-         j_vals.push_back(twoj);
-      }
-    }
-  }
+  std::tie(orbits_remap, energy_vals, l_vals, j_vals) = get_quantum_numbers(modelspace, n1max, lmax);
+
+  std::cout << "Computed quantum numbers for:\n"
+    << "\tEmax\t= " << emax << "\n"
+    << "\tE2max\t= " << e2max << "\n"
+    << "\tNmax\t= " << n1max << "\n"
+    << "\tN2max\t= " << n2max << "\n"
+    << "\tlmax\t= " << lmax << std::endl;
+
+
+  int norb = modelspace.GetNumberOrbits();
+
   int nljmax = orbits_remap.size()-1;
 
   int nreads = 0;
 
   std::cout << "Loading TBME" << std::endl;
 
-  double tbme_pp,tbme_nn,tbme_10,tbme_00;
 
   for(int nlj1=0; nlj1<=nljmax; ++nlj1)
   {
@@ -6317,20 +6361,21 @@ Operator ReadWrite::read_shell_me2j(std::string filename
           int num_prints = 0;
           for (int J=Jmin; J<=Jmax; ++J)
           {
+            bool is_skipping_me = false;
 
             // File is read here.
             // Matrix elements are written in the file with (T,Tz) = (0,0) (1,1) (1,0) (1,-1)
             // infile >> tbme_00 >> tbme_nn >> tbme_10 >> tbme_pp;
-            // Above is not true!
-            // (0,0), (1,-1), (1,0), (1,1)
-            ReadBinary<double>(zipstream, tbme_00);
-            ReadBinary<double>(zipstream, tbme_pp);
-            ReadBinary<double>(zipstream, tbme_10);
-            ReadBinary<double>(zipstream, tbme_nn);
+            double tbme_00 = read_me();
+            double tbme_nn = read_me();
+            double tbme_10 = read_me();
+            double tbme_pp = read_me();
 
             nreads++;
 
-            if (a>=norb or b>=norb or c>=norb or d>=norb) continue;
+            if (a>=norb or b>=norb or c>=norb or d>=norb) is_skipping_me = true;
+
+            if(is_a_max || is_b_max || is_c_max || is_d_max || is_bra_max || is_ket_max) is_skipping_me = true;
 
             // Normalization. The TBMEs are read in un-normalized.
             double norm_factor = 1;
@@ -6341,15 +6386,19 @@ Operator ReadWrite::read_shell_me2j(std::string filename
               std::cout << "00:\t" << tbme_00*norm_factor
                         << "\tnn:\t" << tbme_nn*norm_factor
                         << "\t10:\t" << tbme_10*norm_factor
-                        << "\tpp:\t" << tbme_pp*norm_factor
-                << std::endl;
+                        << "\tpp:\t" << tbme_pp*norm_factor;
+
+              if(is_skipping_me) std::cout << ";\tskipping matrix element";
+
+              std::cout << std::endl;
 
               std::cout << "J:\t" << J << std::endl;
               num_prints++;
             }
 
+            if(is_skipping_me) continue;
+
             // do not write if model space cut off has been reached
-            if(is_a_max || is_b_max || is_c_max || is_d_max || is_bra_max || is_ket_max) continue;
 
             if (norm_factor>0.9 or J%2==0)
             {
@@ -6366,8 +6415,9 @@ Operator ReadWrite::read_shell_me2j(std::string filename
           }
 
           if(num_prints != 0) {
-            std::cout << "abcd:\t" << a << "\t" << b << "\t" << c << "\t" << d << std::endl;
+            // std::cout << "abcd:\t" << a << "\t" << b << "\t" << c << "\t" << d << std::endl;
             std::cout << "nlj:\t" << nlj1+1 << "\t" << nlj2+1 << "\t" << nlj3+1 << "\t" << nlj4+1 << std::endl;
+            std::cout << "Nnlj:\t" << energy_vals[nlj1] << "\t" << energy_vals[nlj2] << "\t" << energy_vals[nlj3] << "\t" << energy_vals[nlj4] << std::endl;
           }
         }
       }

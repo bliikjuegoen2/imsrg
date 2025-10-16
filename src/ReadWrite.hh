@@ -33,6 +33,7 @@
 #include "ThreeBodyME.hh"
 //#include "DaggerOperator.hh"
 #include "Jacobi3BME.hh"
+#include <tuple>
 
 
 class ReadWrite
@@ -124,6 +125,7 @@ class ReadWrite
    Operator ReadOperator2b_Miyagi(std::string, ModelSpace &); // general operator me2j-like format
    void skip_comments(std::ifstream&);
 
+   std::tuple<std::vector<int>, std::vector<int>, std::vector<int>, std::vector<int>> get_quantum_numbers(const ModelSpace &modelspace, int Nmax, int lmax);
    Operator read_shell_me2j(std::string filename
                             , ModelSpace &modelspace
                             , int J, int Z, int P, int float_size
