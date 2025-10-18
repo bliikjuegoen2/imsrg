@@ -6221,6 +6221,103 @@ std::tuple<std::vector<int>, std::vector<int>, std::vector<int>, std::vector<int
   );
 }
 
+template<typename F>
+void ReadWrite::me2j_loop(ModelSpace &modelspace
+                          , int Nmax, int N2max
+                          , F func)
+{
+  int Emax = modelspace.GetEmax();
+  int E2max = modelspace.GetE2max();
+  int lmax = Nmax;
+
+  std::vector<int> orbits_remap;
+  std::vector<int> energy_vals;
+  std::vector<int> l_vals;
+  std::vector<int> j_vals;
+
+  std::tie(
+    orbits_remap
+    , energy_vals
+    , l_vals
+    , j_vals) = get_quantum_numbers(modelspace, Nmax, lmax);
+
+  std::cout << "Computed quantum numbers for:\n"
+    << "\tEmax\t= " << Emax << "\n"
+    << "\tE2max\t= " << E2max << "\n"
+    << "\tNmax\t= " << Nmax << "\n"
+    << "\tN2max\t= " << N2max << "\n"
+    << "\tlmax\t= " << lmax << std::endl;
+
+
+  int norb = modelspace.GetNumberOrbits();
+
+  int nljmax = orbits_remap.size()-1;
+
+  int nreads = 0;
+
+
+  std::cout << "Loading TBME" << std::endl;
+
+
+  for(int nlj1=0; nlj1<=nljmax; ++nlj1)
+  {
+    int a =  orbits_remap[nlj1];
+
+    Orbit & o1 = modelspace.GetOrbit(a);
+
+    bool is_a_max = energy_vals[nlj1] > Emax;
+
+    if (energy_vals[nlj1] > Nmax) break;
+
+    for(int nlj2=0; nlj2<=nlj1; ++nlj2)
+    {
+      int b =  orbits_remap[nlj2];
+
+      Orbit & o2 = modelspace.GetOrbit(b);
+
+      bool is_b_max = energy_vals[nlj2] > Emax;
+      bool is_bra_max = (energy_vals[nlj1] + energy_vals[nlj2]) > E2max;
+
+      if ( (energy_vals[nlj1] + energy_vals[nlj2]) > N2max) break;
+
+      int parity = (o1.l + o2.l) % 2;
+
+      for(int nlj3=0; nlj3<=nlj1; ++nlj3)
+      {
+        int c =  orbits_remap[nlj3];
+        bool is_c_max = energy_vals[nlj3] > Emax;
+
+        for(int nlj4=0; nlj4<=(nlj3==nlj1 ? nlj2 : nlj3); ++nlj4)
+        {
+          int d =  orbits_remap[nlj4];
+          bool is_d_max = energy_vals[nlj4] > Emax;
+          bool is_ket_max = (energy_vals[nlj3] + energy_vals[nlj4]) > E2max;
+
+          if ( (energy_vals[nlj3] + energy_vals[nlj4]) > N2max) break;
+          if ( (l_vals[nlj1]+l_vals[nlj2]+l_vals[nlj3]+l_vals[nlj4])%2 != 0) continue;
+
+          int Jmin = std::max( std::abs(j_vals[nlj1] - j_vals[nlj2]), std::abs(j_vals[nlj3] - j_vals[nlj4]) )/2;
+          int Jmax = std::min( j_vals[nlj1] + j_vals[nlj2], j_vals[nlj3] + j_vals[nlj4] )/2;
+
+          if (Jmin > Jmax) continue;
+
+          func(orbits_remap, energy_vals, l_vals, j_vals
+               , norb, parity
+               , nlj1, nlj2, nlj3, nlj4
+               , a, b, c, d
+               , is_a_max, is_b_max, is_c_max, is_d_max
+               , is_bra_max, is_ket_max
+               , Jmin, Jmax
+               , nreads);
+
+        }
+      }
+    }
+  }
+  std::cout << "Read " << nreads*4 << " matrix elements " << std::endl;
+
+}
+
 Operator ReadWrite::read_shell_me2j(std::string filename
                                     , ModelSpace &modelspace
                                     , int J, int Z, int P
@@ -6271,9 +6368,6 @@ Operator ReadWrite::read_shell_me2j(std::string filename
     std::exit(0);
   }
 
-  int emax = modelspace.GetEmax();
-  int e2max = modelspace.GetE2max();
-  int lmax = n1max;
 
   Operator op = Operator(modelspace, J, Z, (1-P)/2, 2);
 
@@ -6288,148 +6382,214 @@ Operator ReadWrite::read_shell_me2j(std::string filename
     std::exit(0);
   }
 
-  std::cout << J << " " << Z << " " << (1-P)/2 << " " << emax << " " << e2max << std::endl;
+  std::cout << J << " " << Z << " " << (1-P)/2 << std::endl;
 
-  std::vector<int> orbits_remap;
-  std::vector<int> energy_vals;
-  std::vector<int> l_vals;
-  std::vector<int> j_vals;
-
-  std::tie(orbits_remap, energy_vals, l_vals, j_vals) = get_quantum_numbers(modelspace, n1max, lmax);
-
-  std::cout << "Computed quantum numbers for:\n"
-    << "\tEmax\t= " << emax << "\n"
-    << "\tE2max\t= " << e2max << "\n"
-    << "\tNmax\t= " << n1max << "\n"
-    << "\tN2max\t= " << n2max << "\n"
-    << "\tlmax\t= " << lmax << std::endl;
-
-
-  int norb = modelspace.GetNumberOrbits();
-
-  int nljmax = orbits_remap.size()-1;
-
-  int nreads = 0;
-
-  std::cout << "Loading TBME" << std::endl;
-
-
-  for(int nlj1=0; nlj1<=nljmax; ++nlj1)
+  me2j_loop(modelspace, n1max, n2max, [&op, read_me](
+              const std::vector<int>& orbits_remap, const std::vector<int>& energy_vals, const std::vector<int>& l_vals, const std::vector<int>& j_vals
+               , int norb, int parity
+               , int nlj1, int nlj2, int nlj3, int nlj4
+               , int a, int b, int c, int d
+               , bool is_a_max, bool is_b_max, bool is_c_max, bool is_d_max
+               , bool is_bra_max, bool is_ket_max
+               , int Jmin, int Jmax
+               , int &nreads)
   {
-    int a =  orbits_remap[nlj1];
-    Orbit & o1 = modelspace.GetOrbit(a);
-//    int e1 = 2*o1.n + o1.l;
-//    if (e1 > modelspace->Emax) break;
-    // will still read the tbme but won't write to memory
-    bool is_a_max = energy_vals[nlj1] > emax;
-    if (energy_vals[nlj1] > n1max) break;
 
-    for(int nlj2=0; nlj2<=nlj1; ++nlj2)
+    int num_prints = 0;
+
+    for (int J=Jmin; J<=Jmax; ++J)
     {
-      int b =  orbits_remap[nlj2];
-      Orbit & o2 = modelspace.GetOrbit(b);
-//      int e2 = 2*o2.n + o2.l;
-//      if (e1+e2 > Emax) break;
-      bool is_b_max = energy_vals[nlj2] > emax;
-      bool is_bra_max = (energy_vals[nlj1] + energy_vals[nlj2]) > e2max;
-      if ( (energy_vals[nlj1] + energy_vals[nlj2]) > n2max) break;
-      int parity = (o1.l + o2.l) % 2;
+      bool is_skipping_me = false;
 
-      for(int nlj3=0; nlj3<=nlj1; ++nlj3)
-      {
-        int c =  orbits_remap[nlj3];
-        bool is_c_max = energy_vals[nlj3] > emax;
-//        Orbit & o3 = modelspace->GetOrbit(c);
-//        int e3 = 2*o3.n + o3.l;
+      // File is read here.
+      // Matrix elements are written in the file with (T,Tz) = (0,0) (1,1) (1,0) (1,-1)
+      // infile >> tbme_00 >> tbme_nn >> tbme_10 >> tbme_pp;
+      double tbme_00 = read_me();
+      double tbme_nn = read_me();
+      double tbme_10 = read_me();
+      double tbme_pp = read_me();
 
-        for(int nlj4=0; nlj4<=(nlj3==nlj1 ? nlj2 : nlj3); ++nlj4)
-        {
-          int d =  orbits_remap[nlj4];
-//          Orbit & o4 = modelspace->GetOrbit(d);
-//          int e4 = 2*o4.n + o4.l;
-//          if (e3+e4 > Emax) break;
-          bool is_d_max = energy_vals[nlj4] > emax;
-          bool is_ket_max = (energy_vals[nlj3] + energy_vals[nlj4]) > e2max;
-          if ( (energy_vals[nlj3] + energy_vals[nlj4]) > n2max) break;
-//          if ( (o1.l + o2.l + o3.l + o4.l)%2 != 0) continue;
-          if ( (l_vals[nlj1]+l_vals[nlj2]+l_vals[nlj3]+l_vals[nlj4])%2 != 0) continue;
-          int Jmin = std::max( std::abs(j_vals[nlj1] - j_vals[nlj2]), std::abs(j_vals[nlj3] - j_vals[nlj4]) )/2;
-          int Jmax = std::min( j_vals[nlj1] + j_vals[nlj2], j_vals[nlj3] + j_vals[nlj4] )/2;
-//          int Jmin = std::max( std::abs(o1.j2 - o2.j2), std::abs(o3.j2 - o4.j2) )/2;
-//          int Jmax = std::min(o1.j2 + o2.j2, o3.j2+o4.j2)/2;
-          if (Jmin > Jmax) continue;
-          int num_prints = 0;
-          for (int J=Jmin; J<=Jmax; ++J)
-          {
-            bool is_skipping_me = false;
+      nreads++;
 
-            // File is read here.
-            // Matrix elements are written in the file with (T,Tz) = (0,0) (1,1) (1,0) (1,-1)
-            // infile >> tbme_00 >> tbme_nn >> tbme_10 >> tbme_pp;
-            double tbme_00 = read_me();
-            double tbme_nn = read_me();
-            double tbme_10 = read_me();
-            double tbme_pp = read_me();
+      if (a>=norb or b>=norb or c>=norb or d>=norb) is_skipping_me = true;
 
-            nreads++;
+      if(is_a_max || is_b_max || is_c_max || is_d_max || is_bra_max || is_ket_max) is_skipping_me = true;
 
-            if (a>=norb or b>=norb or c>=norb or d>=norb) is_skipping_me = true;
+      // Normalization. The TBMEs are read in un-normalized.
+      double norm_factor = 1;
+      if (a==b)  norm_factor /= PhysConst::SQRT2;
+      if (c==d)  norm_factor /= PhysConst::SQRT2;
 
-            if(is_a_max || is_b_max || is_c_max || is_d_max || is_bra_max || is_ket_max) is_skipping_me = true;
+      if (tbme_00 != 0.0 || tbme_nn != 0.0 || tbme_10 != 0.0 || tbme_pp != 0.0) {
+        std::cout << "00:\t" << tbme_00*norm_factor
+                  << "\tnn:\t" << tbme_nn*norm_factor
+                  << "\t10:\t" << tbme_10*norm_factor
+                  << "\tpp:\t" << tbme_pp*norm_factor;
 
-            // Normalization. The TBMEs are read in un-normalized.
-            double norm_factor = 1;
-            if (a==b)  norm_factor /= PhysConst::SQRT2;
-            if (c==d)  norm_factor /= PhysConst::SQRT2;
+        if(is_skipping_me) std::cout << ";\tskipping matrix element";
 
-            if (tbme_00 != 0.0 || tbme_nn != 0.0 || tbme_10 != 0.0 || tbme_pp != 0.0) {
-              std::cout << "00:\t" << tbme_00*norm_factor
-                        << "\tnn:\t" << tbme_nn*norm_factor
-                        << "\t10:\t" << tbme_10*norm_factor
-                        << "\tpp:\t" << tbme_pp*norm_factor;
+        std::cout << std::endl;
 
-              if(is_skipping_me) std::cout << ";\tskipping matrix element";
-
-              std::cout << std::endl;
-
-              std::cout << "J:\t" << J << std::endl;
-              num_prints++;
-            }
-
-            if(is_skipping_me) continue;
-
-            // do not write if model space cut off has been reached
-
-            if (norm_factor>0.9 or J%2==0)
-            {
-              op.TwoBody.SetTBME(J,parity,-1,a,b,c,d,tbme_pp*norm_factor);
-              op.TwoBody.SetTBME(J,parity,1,a+1,b+1,c+1,d+1,tbme_nn*norm_factor);
-              op.TwoBody.Set_pn_TBME_from_iso(J,1,0,a,b,c,d,tbme_10*norm_factor);
-            }
-            if (norm_factor>0.9 or J%2!=0)
-            {
-              op.TwoBody.Set_pn_TBME_from_iso(J,0,0,a,b,c,d,tbme_00*norm_factor);
-            }
-
-
-          }
-
-          if(num_prints != 0) {
-            // std::cout << "abcd:\t" << a << "\t" << b << "\t" << c << "\t" << d << std::endl;
-            std::cout << "nlj:\t" << nlj1+1 << "\t" << nlj2+1 << "\t" << nlj3+1 << "\t" << nlj4+1 << std::endl;
-            std::cout << "Nnlj:\t" << energy_vals[nlj1] << "\t" << energy_vals[nlj2] << "\t" << energy_vals[nlj3] << "\t" << energy_vals[nlj4] << std::endl;
-          }
-        }
+        std::cout << "J:\t" << J << std::endl;
+        num_prints++;
       }
+
+      if(is_skipping_me) continue;
+
+      // do not write if model space cut off has been reached
+
+      if (norm_factor>0.9 or J%2==0)
+      {
+        op.TwoBody.SetTBME(J,parity,-1,a,b,c,d,tbme_pp*norm_factor);
+        op.TwoBody.SetTBME(J,parity,1,a+1,b+1,c+1,d+1,tbme_nn*norm_factor);
+        op.TwoBody.Set_pn_TBME_from_iso(J,1,0,a,b,c,d,tbme_10*norm_factor);
+      }
+      if (norm_factor>0.9 or J%2!=0)
+      {
+        op.TwoBody.Set_pn_TBME_from_iso(J,0,0,a,b,c,d,tbme_00*norm_factor);
+      }
+
     }
-  }
-  std::cout << "Read " << nreads*4 << " matrix elements " << std::endl;
+
+    if(num_prints != 0) {
+      // std::cout << "abcd:\t" << a << "\t" << b << "\t" << c << "\t" << d << std::endl;
+      std::cout << "nlj:\t" << nlj1+1 << "\t" << nlj2+1 << "\t" << nlj3+1 << "\t" << nlj4+1 << std::endl;
+      std::cout << "Nnlj:\t" << energy_vals[nlj1] << "\t" << energy_vals[nlj2] << "\t" << energy_vals[nlj3] << "\t" << energy_vals[nlj4] << std::endl;
+    }
+
+  });
 
   std::cout << "Done Loading: " << filename << std::endl;
   return op;
 }
 
 
+void ReadWrite::write_shell_me2j(std::string filename
+                             , Operator &op
+                             , int float_size
+                             , int n1max, int n2max)
+{
+  std::ofstream outfile(filename, std::ios_base::out | std::ios_base::binary);
+  if ( !outfile.good() )
+  {
+     std::cerr << "************************************" << std::endl
+          << "**    Trouble opening file  !!!   **" << std::endl
+          << "************************************" << std::endl;
+     goodstate = false;
+     return;
+  }
+  ModelSpace& modelspace = *op.GetModelSpace();
+
+  boost::iostreams::filtering_ostream zipstream;
+
+  // Push gzip compressor only if extension is .gz
+  //
+  if (filename.substr(filename.find_last_of(".")) == ".gz") {
+      zipstream.push(boost::iostreams::gzip_compressor());
+  }
+
+  zipstream.push(outfile);
+
+  assert((float_size == 4) || (float_size == 8));
+
+  auto write_me = [this, &zipstream, float_size](double matrix_element) {
+    if(float_size == 4) {
+      WriteBinary<float>(zipstream, float(matrix_element));
+    }
+    else {
+      WriteBinary<double>(zipstream, matrix_element);
+    }
+  };
+
+  if (op.GetJRank()!=0 || op.GetParity()!=0 || op.GetTRank()!=0) {
+    std::cerr << "ERROR: Provided operator has unsupported (J0,g0,Tz0)!=(0,0,0)." << std::endl;
+    goodstate = false;
+    std::exit(0);
+  }
+
+
+  std::cout << "Writing me2j operator to: " << filename << std::endl;
+
+  // set header
+  const std::size_t header_length = 255;
+  char header[header_length]="me2j-f2-bin";
+  memset(&header[sizeof("me2j-f2-bin")], '\0', header_length-sizeof("me2j-f2-bin"));
+  header[header_length-1] = '\0';
+  WriteBinary<char>(zipstream, header, header_length);
+
+  // write matrix elements
+
+  me2j_loop(modelspace, n1max, n2max, [&op, write_me](
+              const std::vector<int>& orbits_remap, const std::vector<int>& energy_vals, const std::vector<int>& l_vals, const std::vector<int>& j_vals
+               , int norb, int parity
+               , int nlj1, int nlj2, int nlj3, int nlj4
+               , int a, int b, int c, int d
+               , bool is_a_max, bool is_b_max, bool is_c_max, bool is_d_max
+               , bool is_bra_max, bool is_ket_max
+               , int Jmin, int Jmax
+               , int &nreads)
+  {
+
+    int num_prints = 0;
+
+    for (int J=Jmin; J<=Jmax; ++J)
+    {
+      nreads++;
+
+      // write zeros because those matrix elements do not exist
+      if (a>=norb or b>=norb or c>=norb or d>=norb) {
+        write_me(0);
+        write_me(0);
+        write_me(0);
+        write_me(0);
+        continue;
+      }
+      if(is_a_max || is_b_max || is_c_max || is_d_max || is_bra_max || is_ket_max) {
+        write_me(0);
+        write_me(0);
+        write_me(0);
+        write_me(0);
+        continue;
+      }
+      // Matrix elements are written in the file with (T,Tz) = (0,0) (1,1) (1,0) (1,-1)
+      double tbme_pp = op.TwoBody.GetTBME(J,parity,-1,a,b,c,d);        // unnormalized
+      double tbme_nn = op.TwoBody.GetTBME(J,parity,1,a+1,b+1,c+1,d+1); // unnormalized
+      double tbme_10 = op.TwoBody.Get_iso_TBME_from_pn(J,1,0,a,b,c,d); // normalized
+      double tbme_00 = op.TwoBody.Get_iso_TBME_from_pn(J,0,0,a,b,c,d); // normalized
+
+      // Normalization. The TBMEs are written in un-normalized.
+      double norm_factor = 1;
+      if (a==b)  norm_factor *= PhysConst::SQRT2;
+      if (c==d)  norm_factor *= PhysConst::SQRT2;
+
+      if (tbme_00 != 0.0 || tbme_nn != 0.0 || tbme_10 != 0.0 || tbme_pp != 0.0) {
+        std::cout << "00:\t" << tbme_00
+                  << "\tnn:\t" << tbme_nn/norm_factor
+                  << "\t10:\t" << tbme_10
+                  << "\tpp:\t" << tbme_pp/norm_factor;
+
+        std::cout << std::endl;
+
+        std::cout << "J:\t" << J << std::endl;
+        num_prints++;
+      }
+
+      write_me(tbme_00*norm_factor);
+      write_me(tbme_nn);
+      write_me(tbme_10*norm_factor);
+      write_me(tbme_pp);
+    }
+
+    if(num_prints != 0) {
+      // std::cout << "abcd:\t" << a << "\t" << b << "\t" << c << "\t" << d << std::endl;
+      std::cout << "nlj:\t" << nlj1+1 << "\t" << nlj2+1 << "\t" << nlj3+1 << "\t" << nlj4+1 << std::endl;
+      std::cout << "Nnlj:\t" << energy_vals[nlj1] << "\t" << energy_vals[nlj2] << "\t" << energy_vals[nlj3] << "\t" << energy_vals[nlj4] << std::endl;
+    }
+
+  });
+  
+  std::cout << "Done Generating: " << filename << std::endl;
+}
 
 
 

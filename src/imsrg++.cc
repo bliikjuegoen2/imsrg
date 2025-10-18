@@ -127,6 +127,7 @@ Operator read_operator(
     int file3e2max,
     int file3e3max)
 {
+  std::cout << "reading " << opff.opname << " with " << opff.j << " " << opff.t << " " << opff.p << " " << opff.r << "  from file " << opff.file2name << std::endl;
   Operator op(modelspace, opff.j, opff.t, opff.p, opff.r );
   if (opff.r>2) op.ThreeBody.Allocate();
   if ( input_op_fmt == "navratil" )
@@ -141,7 +142,7 @@ Operator read_operator(
     {
       Operator optmp = rw.ReadOperator2b_Miyagi(opff.file2name, modelspace);
       std::cout << "set two body" << std::endl;
-      op.TwoBody = optmp.TwoBody;
+      op.TwoBody = std::move(optmp.TwoBody);
     }
     std::cout << "three body from:\t" << opff.file3name << ";" << std::endl;
     if ( opff.r>2 and opff.file3name != "")  rw.Read_Darmstadt_3body( opff.file3name, op,  file3e1max,file3e2max,file3e3max);
@@ -833,7 +834,7 @@ int main(int argc, char** argv)
     for ( auto& opff : opsfromfile_unpacked)
     {
       auto op = read_operator(opff, modelspace, rw, input_op_fmt, file3e1max, file3e2max, file3e3max);
-      ops.push_back( op );
+      ops.push_back( std::move(op) );
       opnames.push_back( opff.opname );
     }
 
@@ -1465,29 +1466,8 @@ int main(int argc, char** argv)
       if ( opname.find("_FROMFILE") != std::string::npos)
       {
         OpFromFile& opff = opsfromfile_unpacked[count_from_file];
-         std::cout << "reading " << opff.opname << " with " << opff.j << " " << opff.t << " " << opff.p << " " << opff.r << "  from file " << opff.file2name << std::endl;
-        op = Operator(modelspace, opff.j, opff.t, opff.p, opff.r );
-        if (opff.r>2) op.ThreeBody.Allocate();
-        if ( input_op_fmt == "navratil" )
-        {
-          rw.Read2bCurrent_Navratil( opff.file2name, op );
-        }
-        else if ( input_op_fmt == "miyagi" )
-        {
-          if (opff.file2name != "")
-          {
-            Operator optmp = rw.ReadOperator2b_Miyagi(opff.file2name, modelspace);
-            op.TwoBody = optmp.TwoBody;
-          }
-          if ( opff.r>2 and opff.file3name != "")  rw.Read_Darmstadt_3body( opff.file3name, op,  file3e1max,file3e2max,file3e3max);
-        }
-        else if (input_op_fmt == "shell") {
-          if (opff.file2name != "")
-          {
-            Operator optmp = rw.read_shell_me2j(opff.file2name, modelspace, opff.j, opff.t, opff.p, 8, modelspace.GetE2max(), modelspace.GetE2max());
-            op.TwoBody = optmp.TwoBody;
-          }
-        }
+        op = read_operator(opff, modelspace, rw, input_op_fmt
+                           , file3e1max, file3e2max, file3e3max);
         count_from_file++;
         opname = opff.opname; // Get rid of the _FROMFILE bit.
       }

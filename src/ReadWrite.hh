@@ -132,6 +132,18 @@ class ReadWrite
                             , int n1max, int n2max);
 
 
+   void write_shell_me2j(std::string filename
+                             , Operator &op
+                             , int float_size
+                             ,  int n1max, int n2max);
+
+
+
+   template<typename F>
+   void me2j_loop(ModelSpace &modelspace
+                  , int Nmax, int N2max
+                  , F func);
+
    template <typename tDataType>
    void ReadBinary(std::istream& is, tDataType &data)
    // Read binary data item from stream.
@@ -165,6 +177,48 @@ class ReadWrite
       validate_stream(is);
       is.read(reinterpret_cast<char*>(data_ptr), count*sizeof(*data_ptr));
    }
+
+
+
+   template <typename tDataType>
+      void WriteBinary(std::ostream& os, const tDataType &data)
+      // Write binary data item to stream.
+      //
+      // Note that, if the template parameter is omitted, the data type
+      // of the value given for data will determine the output type, but
+      // explicitly giving the template parameter casts the data to the
+      // given data type tDataType.  Explicitly giving the template
+      // parameter is recommended both to document the data format in
+      // the output file and to avoid any ambiguity of the output type.
+      //
+      // Arguments:
+      //   os (input): binary stream for output
+      //   data (input): data value to output
+      //
+      // Ex:
+      //   mcutils::WriteBinary<float>(out_stream,value);
+      {
+         static_assert(!std::is_pointer<tDataType>::value, "tDataType cannot be a pointer type");
+         os.write(reinterpret_cast<const char*>(&data),sizeof(data));
+      }
+
+
+   template <typename tDataType>
+      void WriteBinary(std::ostream& os, const tDataType* data_ptr, std::size_t count)
+      // Write binary data items to stream.
+      //
+      // Arguments:
+      //   os (input): binary stream for output
+      //   data (input): pointer to data to output
+      //   count (input): number of (contiguous) values to write
+      //
+      // Ex:
+      //   mcutils::WriteBinary<float>(out_stream, value_arr, dimension);
+      {
+         static_assert(!std::is_pointer<tDataType>::value, "tDataType cannot be a pointer type");
+         os.write(reinterpret_cast<const char*>(data_ptr), count*sizeof(*data_ptr));
+      }
+
 
 
    // added by A.Belley

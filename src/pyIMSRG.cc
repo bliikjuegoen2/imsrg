@@ -473,6 +473,12 @@ PYBIND11_MODULE(pyIMSRG, m)
                py::arg("float_size"),
                py::arg("n1max"),
                py::arg("n2max"))
+          .def("write_shell_me2j", &ReadWrite::write_shell_me2j,
+               py::arg("filename"),
+               py::arg("op"),
+               py::arg("float_size"),
+               py::arg("n1max"),
+               py::arg("n2max"))
 #ifndef NO_HDF5
           .def("Read3bodyHDF5", &ReadWrite::Read3bodyHDF5)
 #endif
