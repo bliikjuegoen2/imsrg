@@ -1345,13 +1345,27 @@ int main(int argc, char** argv)
 //    }
   }
 
+  //write unmixed hamiltonian
+  if (core_generator == "irrep-unmixing" || "valence_generatora") {
+    // only support me2j as of now
+
+    if(valence_file_format != "shell-me2j") {
+      std::cerr << "unsupported output format:\t" << valence_file_format << std::endl;
+      exit(0);
+    }
+
+    Operator& H_s = imsrgsolver.GetH_s();
+
+    rw.write_shell_me2j(intfile+"_me2j-double.bin.gz", H_s
+                        , 8, imsrgsolver.modelspace->GetE2max(), imsrgsolver.modelspace->GetE2max());
+  }
 
   // Write the output
 
   // If we're doing a shell model interaction, write the
   // interaction files to disk.
 //  if (modelspace.valence.size() > 0)
-  if (modelspace_imsrg.valence.size() > 0)
+  else if (modelspace_imsrg.valence.size() > 0)
   {
     if (valence_file_format == "antoine") // this is still being tested...
     {
