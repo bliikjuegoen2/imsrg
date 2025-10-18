@@ -147,7 +147,7 @@ Operator read_operator(
     std::cout << "three body from:\t" << opff.file3name << ";" << std::endl;
     if ( opff.r>2 and opff.file3name != "")  rw.Read_Darmstadt_3body( opff.file3name, op,  file3e1max,file3e2max,file3e3max);
   }
-  else if (input_op_fmt == "shell") {
+  else if (input_op_fmt == "shell-me2j") {
     if (opff.file2name != "")
     {
       Operator optmp = rw.read_shell_me2j(opff.file2name, modelspace, opff.j, opff.t, opff.p, 8, modelspace.GetE2max(), modelspace.GetE2max());
@@ -1641,6 +1641,11 @@ int main(int argc, char** argv)
         {
           rw.WriteTokyo(op,intfile+opname+".snt", "op");
         }
+        else if (valence_file_format == "shell-me2j")
+        {
+          rw.write_shell_me2j(intfile+opname+"_me2j-double.bin.gz", op
+                              , 8, op.modelspace->GetE2max(), op.modelspace->GetE2max());
+        }
         else
         {
           rw.WriteNuShellX_op(op,intfile+opname+".int");
@@ -1657,6 +1662,11 @@ int main(int argc, char** argv)
         if (valence_file_format == "tokyo")
         {
           rw.WriteTensorTokyo(intfile+opname+"_2b.snt",op);
+        }
+        else if (valence_file_format == "shell-me2j")
+        {
+          rw.write_shell_me2j(intfile+opname+"_me2j-double.bin.gz", op
+                              , 8, op.modelspace->GetE2max(), op.modelspace->GetE2max());
         }
         else
         {
