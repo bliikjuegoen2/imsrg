@@ -6337,6 +6337,8 @@ Operator ReadWrite::read_shell_me2j(std::string filename
                                     , int float_size
                                     , int n1max, int n2max)
 {
+  Operator op = Operator(modelspace, J, Z, (1-P)/2, 2);
+
   // setup file stream
   std::ifstream infile( filename, std::ios_base::in | std::ios_base::binary );
   if ( !infile.good() )
@@ -6344,8 +6346,8 @@ Operator ReadWrite::read_shell_me2j(std::string filename
     std::cerr << "************************************" << std::endl
       << "**    Trouble reading file  !!!   **" << filename << " line " << __LINE__ << std::endl
       << "************************************" << std::endl;
-    goodstate = false;
-    exit(0);
+    failing_io();
+    return op;
   }
   boost::iostreams::filtering_istream zipstream;
 
@@ -6375,7 +6377,6 @@ Operator ReadWrite::read_shell_me2j(std::string filename
     }
   };
 
-  Operator op = Operator(modelspace, J, Z, (1-P)/2, 2);
   std::cout << J << " " << Z << " " << (1-P)/2 << std::endl;
 
   if (J!=0 || P!=0 || Z!=0) {
@@ -6488,7 +6489,8 @@ void ReadWrite::write_shell_me2j(std::string filename
      std::cerr << "************************************" << std::endl
           << "**    Trouble opening file  !!!   **" << std::endl
           << "************************************" << std::endl;
-     goodstate = false;
+
+     failing_io();
      return;
   }
   ModelSpace& modelspace = *op.GetModelSpace();
