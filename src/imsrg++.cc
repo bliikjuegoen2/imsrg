@@ -1596,7 +1596,9 @@ int main(int argc, char** argv)
 
         // fall back on tokyo if me2j fails
         if(! rw.on_successful_io()) {
+          std::cout << "me2j failed;\twriting " << opname << " as tokyo" << std::endl;
           rw.WriteTokyo(op,intfile+opname+".snt", "op");
+          std::cout << "done writing tokyo" << std::endl;
         }
       }
       else if (valence_file_format == "tokyo")
