@@ -1593,6 +1593,11 @@ int main(int argc, char** argv)
       {
         rw.write_shell_me2j(intfile+opname+"_me2j-double.bin.gz", op
                             , 8, op.modelspace->GetE2max(), op.modelspace->GetE2max());
+
+        // fall back on tokyo if me2j fails
+        if(! rw.on_successful_io()) {
+          rw.WriteTokyo(op,intfile+opname+".snt", "op");
+        }
       }
       else if (valence_file_format == "tokyo")
       {
@@ -1613,12 +1618,17 @@ int main(int argc, char** argv)
        std::cout << "writing tensor files " << std::endl;
       if (valence_file_format == "shell-me2j")
       {
-        if (op.GetJRank()==0 and (op.GetTRank()!=0 or op.GetParity()!=0) )
+        if (op.GetJRank()==0 && (op.GetTRank()!=0 || op.GetParity()!=0) )
         {
            op.MakeReduced();
         }
         rw.write_shell_me2j(intfile+opname+"_me2j-double.bin.gz", op
                             , 8, op.modelspace->GetE2max(), op.modelspace->GetE2max());
+
+        // fall back on tokyo if me2j fails
+        if(! rw.on_successful_io()) {
+          rw.WriteTokyo(op,intfile+opname+".snt", "op");
+        }
       }
       else if (valence_file_format == "tokyo")
       {
