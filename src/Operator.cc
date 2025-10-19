@@ -123,6 +123,12 @@ Operator::Operator(Operator &&op)
   IMSRGProfiler::counter["N_Operators"]++;
 }
 
+void Operator::print_matrix_keys() const
+{
+  std::cout << "print TBME keys" << std::endl;
+  TwoBody.print_matrix_keys();
+}
+
 /////////////// OVERLOADED OPERATORS =,+,-,*,etc ////////////////////
 
 Operator &Operator::operator=(const Operator &rhs) = default;

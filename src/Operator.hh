@@ -91,6 +91,8 @@ class Operator
   Operator( const Operator& rhs); ///< Copy constructor
   Operator( Operator&&);
 
+  void print_matrix_keys() const;
+
   //Overloaded operators
   Operator& operator=( const Operator& rhs);
   Operator& operator+=( const Operator& rhs);

@@ -33,6 +33,18 @@ TwoBodyME::TwoBodyME(ModelSpace* ms, int rJ, int rT, int p)
   Allocate();
 }
 
+void TwoBodyME::print_matrix_keys() const
+{
+    std::cout << "<print-matrix-keys>" << std::endl;
+    for (const auto& item : MatEl)
+    {
+        const auto& key = item.first;
+
+        std::cout << "[\t" << key[0] << ",\t" << key[1] << "\t]" << std::endl;
+    }
+    std::cout << "<\\print-matrix-keys>" << std::endl;
+}
+
 
  TwoBodyME& TwoBodyME::operator*=(const double rhs)
  {
