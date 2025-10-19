@@ -1588,8 +1588,13 @@ int main(int argc, char** argv)
 //    std::cout << "      " << op.GetJRank() << " " << op.GetTRank() << " " << op.GetParity() << "   " << op.GetNumberLegs() << std::endl;
     if ( ((op.GetJRank()+op.GetTRank()+op.GetParity())<1) and (op.GetNumberLegs()%2==0) )
     {
-       std::cout << "writing scalar files " << std::endl;
-      if (valence_file_format == "tokyo")
+      std::cout << "writing scalar files " << std::endl;
+      if (valence_file_format == "shell-me2j")
+      {
+        rw.write_shell_me2j(intfile+opname+"_me2j-double.bin.gz", op
+                            , 8, op.modelspace->GetE2max(), op.modelspace->GetE2max());
+      }
+      else if (valence_file_format == "tokyo")
       {
         rw.WriteTokyo(op,intfile+opname+".snt", "op");
       }
@@ -1606,7 +1611,16 @@ int main(int argc, char** argv)
     else
     {
        std::cout << "writing tensor files " << std::endl;
-      if (valence_file_format == "tokyo")
+      if (valence_file_format == "shell-me2j")
+      {
+        if (op.GetJRank()==0 and (op.GetTRank()!=0 or op.GetParity()!=0) )
+        {
+           op.MakeReduced();
+        }
+        rw.write_shell_me2j(intfile+opname+"_me2j-double.bin.gz", op
+                            , 8, op.modelspace->GetE2max(), op.modelspace->GetE2max());
+      }
+      else if (valence_file_format == "tokyo")
       {
         if (op.GetJRank()==0 and (op.GetTRank()!=0 or op.GetParity()!=0) )
         {
