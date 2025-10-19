@@ -230,6 +230,8 @@ class ReadWrite
 //   std::map<std::string,std::string> InputParameters; // I believe this is very very deprecated
 
    bool InGoodState(){return goodstate;};
+   bool on_successful_io();
+   void failing_io();
    bool doCoM_corr;
    bool goodstate;
    std::array<double,5> LECs;

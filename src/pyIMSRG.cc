@@ -458,6 +458,8 @@ PYBIND11_MODULE(pyIMSRG, m)
 
       py::class_<ReadWrite>(m, "ReadWrite")
           .def(py::init<>())
+          .def("on_successful_io", &ReadWrite::on_successful_io)
+          .def("failing_io", &ReadWrite::failing_io)
           .def("ReadTBME_Oslo", &ReadWrite::ReadTBME_Oslo)
           .def("ReadTBME_OakRidge", &ReadWrite::ReadTBME_OakRidge, py::arg("spname"), py::arg("tbmename"), py::arg("H"), py::arg("tbme_format") = "ascii")
           .def("ReadBareTBME_Jason", &ReadWrite::ReadBareTBME_Jason)

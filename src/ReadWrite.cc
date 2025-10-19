@@ -56,7 +56,20 @@ ReadWrite::ReadWrite()
 {
 }
 
+bool ReadWrite::on_successful_io()
+{
+  bool is_successful = goodstate;
 
+  goodstate = true; // reset state for next io operation
+
+  return is_successful;
+
+}
+
+void ReadWrite::failing_io()
+{
+  goodstate = false;
+}
 
 /// Read two-body matrix elements from an Oslo-formatted file
 void ReadWrite::ReadTBME_Oslo( std::string filename, Operator& Hbare)
@@ -6363,6 +6376,14 @@ Operator ReadWrite::read_shell_me2j(std::string filename
   };
 
   Operator op = Operator(modelspace, J, Z, (1-P)/2, 2);
+  std::cout << J << " " << Z << " " << (1-P)/2 << std::endl;
+
+  if (J!=0 || P!=0 || Z!=0) {
+    std::cerr << "ERROR: Provided operator has unsupported (J0,g0,Tz0)!=(0,0,0)" << std::endl;
+    std::cerr << "op = 0" << std::endl;
+    failing_io();
+    return op;
+  }
 
   const std::size_t header_length = 255;
   char header[header_length];
@@ -6371,11 +6392,10 @@ Operator ReadWrite::read_shell_me2j(std::string filename
 
   if(std::strstr(header,"me2j-f2-bin")==NULL) {
     std::cerr << "ERROR: unrecognized me2j file header" << std::endl;
-    goodstate = false;
-    std::exit(0);
+    std::cerr << "op = 0" << std::endl;
+    failing_io();
+    return op;
   }
-
-  std::cout << J << " " << Z << " " << (1-P)/2 << std::endl;
 
   me2j_loop(modelspace, n1max, n2max, [&op, read_me](
               const std::vector<int>& orbits_remap, const std::vector<int>& energy_vals, const std::vector<int>& l_vals, const std::vector<int>& j_vals
@@ -6494,6 +6514,19 @@ void ReadWrite::write_shell_me2j(std::string filename
     }
   };
 
+  auto write_null = [write_me](){
+    // use this in the case where the ME does not exist
+    write_me(0);
+    write_me(0);
+    write_me(0);
+    write_me(0);
+  };
+
+  if (op.GetJRank()!=0 || op.GetParity()!=0 || op.GetTRank()!=0) {
+    std::cerr << "ERROR: Provided operator has unsupported (J0,g0,Tz0)!=(0,0,0). Will write garbage!" << std::endl;
+    failing_io();
+  }
+
   std::cout << "Writing me2j operator to: " << filename << std::endl;
 
   // set header
@@ -6505,7 +6538,7 @@ void ReadWrite::write_shell_me2j(std::string filename
 
   // write matrix elements
 
-  me2j_loop(modelspace, n1max, n2max, [&op, write_me](
+  me2j_loop(modelspace, n1max, n2max, [this, &op, write_me, write_null](
               const std::vector<int>& orbits_remap, const std::vector<int>& energy_vals, const std::vector<int>& l_vals, const std::vector<int>& j_vals
                , int norb, int parity
                , int nlj1, int nlj2, int nlj3, int nlj4
@@ -6524,24 +6557,34 @@ void ReadWrite::write_shell_me2j(std::string filename
 
       // write zeros because those matrix elements do not exist
       if (a>=norb or b>=norb or c>=norb or d>=norb) {
-        write_me(0);
-        write_me(0);
-        write_me(0);
-        write_me(0);
+        write_null();
         continue;
       }
       if(is_a_max || is_b_max || is_c_max || is_d_max || is_bra_max || is_ket_max) {
-        write_me(0);
-        write_me(0);
-        write_me(0);
-        write_me(0);
+        write_null();
         continue;
       }
-      // Matrix elements are written in the file with (T,Tz) = (0,0) (1,1) (1,0) (1,-1)
-      double tbme_pp = op.TwoBody.GetTBME(J,parity,-1,a,b,c,d);        // unnormalized
-      double tbme_nn = op.TwoBody.GetTBME(J,parity,1,a+1,b+1,c+1,d+1); // unnormalized
-      double tbme_10 = op.TwoBody.Get_iso_TBME_from_pn(J,1,0,a,b,c,d); // normalized
-      double tbme_00 = op.TwoBody.Get_iso_TBME_from_pn(J,0,0,a,b,c,d); // normalized
+
+      double tbme_pp = -999;
+      double tbme_nn = -999;
+      double tbme_10 = -999;
+      double tbme_00 = -999;
+
+      try{
+        // Matrix elements are written in the file with (T,Tz) = (0,0) (1,1) (1,0) (1,-1)
+        tbme_pp = op.TwoBody.GetTBME(J,parity,-1,a,b,c,d);        // unnormalized
+        tbme_nn = op.TwoBody.GetTBME(J,parity,1,a+1,b+1,c+1,d+1); // unnormalized
+        tbme_10 = op.TwoBody.Get_iso_TBME_from_pn(J,1,0,a,b,c,d); // normalized
+        tbme_00 = op.TwoBody.Get_iso_TBME_from_pn(J,0,0,a,b,c,d); // normalized
+      }
+      catch (const std::out_of_range& e)
+      {
+        std::cout << "J:\t" << J << ";\t"<< e.what() << ";\tWriting zeros" << std::endl;
+        write_null();
+        num_prints++;
+        failing_io();
+        continue;
+      }
 
       // Normalization. The TBMEs are written in un-normalized.
       double norm_factor = 1;
