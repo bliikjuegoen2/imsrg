@@ -6362,13 +6362,6 @@ Operator ReadWrite::read_shell_me2j(std::string filename
     }
   };
 
-  if (J!=0 || P!=0 || Z!=0) {
-    std::cerr << "ERROR: Provided operator has unsupported (J0,g0,Tz0)!=(0,0,0)." << std::endl;
-    goodstate = false;
-    std::exit(0);
-  }
-
-
   Operator op = Operator(modelspace, J, Z, (1-P)/2, 2);
 
   const std::size_t header_length = 255;
@@ -6500,13 +6493,6 @@ void ReadWrite::write_shell_me2j(std::string filename
       WriteBinary<double>(zipstream, matrix_element);
     }
   };
-
-  if (op.GetJRank()!=0 || op.GetParity()!=0 || op.GetTRank()!=0) {
-    std::cerr << "ERROR: Provided operator has unsupported (J0,g0,Tz0)!=(0,0,0)." << std::endl;
-    goodstate = false;
-    std::exit(0);
-  }
-
 
   std::cout << "Writing me2j operator to: " << filename << std::endl;
 
