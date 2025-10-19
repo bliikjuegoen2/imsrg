@@ -1346,7 +1346,7 @@ int main(int argc, char** argv)
   }
 
   //write unmixed hamiltonian
-  if (core_generator == "irrep-unmixing" || "valence_generatora") {
+  if (core_generator == "irrep-unmixing" || valence_generator == "irrep-unmixing") {
     // only support me2j as of now
 
     if(valence_file_format != "shell-me2j") {
