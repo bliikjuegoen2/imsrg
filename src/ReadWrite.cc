@@ -6254,7 +6254,7 @@ void ReadWrite::me2j_loop(ModelSpace &modelspace
     , l_vals
     , j_vals) = get_quantum_numbers(modelspace, Nmax, lmax);
 
-  std::cout << "Computed quantum numbers for:\n"
+  std::cerr << "Computed quantum numbers for:\n"
     << "\tEmax\t= " << Emax << "\n"
     << "\tE2max\t= " << E2max << "\n"
     << "\tNmax\t= " << Nmax << "\n"
@@ -6269,7 +6269,7 @@ void ReadWrite::me2j_loop(ModelSpace &modelspace
   int nreads = 0;
 
 
-  std::cout << "Loading TBME" << std::endl;
+  std::cerr << "Loading TBME" << std::endl;
 
 
   for(int nlj1=0; nlj1<=nljmax; ++nlj1)
@@ -6327,7 +6327,7 @@ void ReadWrite::me2j_loop(ModelSpace &modelspace
       }
     }
   }
-  std::cout << "Read " << nreads*4 << " matrix elements " << std::endl;
+  std::cerr << "Read " << nreads*4 << " matrix elements " << std::endl;
 
 }
 
@@ -6357,7 +6357,7 @@ Operator ReadWrite::read_shell_me2j(std::string filename
 
   zipstream.push(infile);
 
-  std::cout << "Reading me2j operator from: " << filename << std::endl;
+  std::cerr << "Reading me2j operator from: " << filename << std::endl;
 
   validate_stream(zipstream);
 
@@ -6377,7 +6377,7 @@ Operator ReadWrite::read_shell_me2j(std::string filename
     }
   };
 
-  std::cout << J << " " << Z << " " << (1-P)/2 << std::endl;
+  std::cerr << J << " " << Z << " " << (1-P)/2 << std::endl;
 
   if (J!=0 || P!=0 || Z!=0) {
     std::cerr << "ERROR: Provided operator has unsupported (J0,g0,Tz0)!=(0,0,0)" << std::endl;
@@ -6435,16 +6435,16 @@ Operator ReadWrite::read_shell_me2j(std::string filename
       if (c==d)  norm_factor /= PhysConst::SQRT2;
 
       if (tbme_00 != 0.0 || tbme_nn != 0.0 || tbme_10 != 0.0 || tbme_pp != 0.0) {
-        std::cout << "00:\t" << tbme_00*norm_factor
+        std::cerr << "00:\t" << tbme_00*norm_factor
                   << "\tnn:\t" << tbme_nn*norm_factor
                   << "\t10:\t" << tbme_10*norm_factor
                   << "\tpp:\t" << tbme_pp*norm_factor;
 
-        if(is_skipping_me) std::cout << ";\tskipping matrix element";
+        if(is_skipping_me) std::cerr << ";\tskipping matrix element";
 
-        std::cout << std::endl;
+        std::cerr << std::endl;
 
-        std::cout << "J:\t" << J << std::endl;
+        std::cerr << "J:\t" << J << std::endl;
         num_prints++;
       }
 
@@ -6467,13 +6467,13 @@ Operator ReadWrite::read_shell_me2j(std::string filename
 
     if(num_prints != 0) {
       // std::cout << "abcd:\t" << a << "\t" << b << "\t" << c << "\t" << d << std::endl;
-      std::cout << "nlj:\t" << nlj1+1 << "\t" << nlj2+1 << "\t" << nlj3+1 << "\t" << nlj4+1 << std::endl;
-      std::cout << "Nnlj:\t" << energy_vals[nlj1] << "\t" << energy_vals[nlj2] << "\t" << energy_vals[nlj3] << "\t" << energy_vals[nlj4] << std::endl;
+      std::cerr << "nlj:\t" << nlj1+1 << "\t" << nlj2+1 << "\t" << nlj3+1 << "\t" << nlj4+1 << std::endl;
+      std::cerr << "Nnlj:\t" << energy_vals[nlj1] << "\t" << energy_vals[nlj2] << "\t" << energy_vals[nlj3] << "\t" << energy_vals[nlj4] << std::endl;
     }
 
   });
 
-  std::cout << "Done Loading: " << filename << std::endl;
+  std::cerr << "Done Loading: " << filename << std::endl;
   return op;
 }
 
@@ -6529,7 +6529,7 @@ void ReadWrite::write_shell_me2j(std::string filename
     failing_io();
   }
 
-  std::cout << "Writing me2j operator to: " << filename << std::endl;
+  std::cerr << "Writing me2j operator to: " << filename << std::endl;
 
   // set header
   const std::size_t header_length = 255;
@@ -6581,7 +6581,7 @@ void ReadWrite::write_shell_me2j(std::string filename
       }
       catch (const std::out_of_range& e)
       {
-        std::cout << "J:\t" << J << ";\t"<< e.what() << ";\tWriting zeros" << std::endl;
+        std::cerr << "J:\t" << J << ";\t"<< e.what() << ";\tWriting zeros" << std::endl;
         write_null();
         num_prints++;
         failing_io();
@@ -6594,14 +6594,14 @@ void ReadWrite::write_shell_me2j(std::string filename
       if (c==d)  norm_factor *= PhysConst::SQRT2;
 
       if (tbme_00 != 0.0 || tbme_nn != 0.0 || tbme_10 != 0.0 || tbme_pp != 0.0) {
-        std::cout << "00:\t" << tbme_00
+        std::cerr << "00:\t" << tbme_00
                   << "\tnn:\t" << tbme_nn/norm_factor
                   << "\t10:\t" << tbme_10
                   << "\tpp:\t" << tbme_pp/norm_factor;
 
-        std::cout << std::endl;
+        std::cerr << std::endl;
 
-        std::cout << "J:\t" << J << std::endl;
+        std::cerr << "J:\t" << J << std::endl;
         num_prints++;
       }
 
@@ -6613,13 +6613,13 @@ void ReadWrite::write_shell_me2j(std::string filename
 
     if(num_prints != 0) {
       // std::cout << "abcd:\t" << a << "\t" << b << "\t" << c << "\t" << d << std::endl;
-      std::cout << "nlj:\t" << nlj1+1 << "\t" << nlj2+1 << "\t" << nlj3+1 << "\t" << nlj4+1 << std::endl;
-      std::cout << "Nnlj:\t" << energy_vals[nlj1] << "\t" << energy_vals[nlj2] << "\t" << energy_vals[nlj3] << "\t" << energy_vals[nlj4] << std::endl;
+      std::cerr << "nlj:\t" << nlj1+1 << "\t" << nlj2+1 << "\t" << nlj3+1 << "\t" << nlj4+1 << std::endl;
+      std::cerr << "Nnlj:\t" << energy_vals[nlj1] << "\t" << energy_vals[nlj2] << "\t" << energy_vals[nlj3] << "\t" << energy_vals[nlj4] << std::endl;
     }
 
   });
   
-  std::cout << "Done Generating: " << filename << std::endl;
+  std::cerr << "Done Generating: " << filename << std::endl;
 }
 
 
