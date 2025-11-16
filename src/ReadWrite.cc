@@ -6219,7 +6219,7 @@ std::tuple<std::vector<int>, std::vector<int>, std::vector<int>, std::vector<int
          energy_vals.push_back( 2*n+l);
          l_vals.push_back(l);
          j_vals.push_back(twoj);
-         std::cout << "orbit:\t" << orbits_remap.back()
+         std::cerr << "orbit:\t" << orbits_remap.back()
                    << " energy:\t" << energy_vals.back()
                    << " l:\t" << l_vals.back()
                    << " j:\t" << j_vals.back() << std::endl;
