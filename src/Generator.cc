@@ -294,7 +294,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
 
     std::cout << std::scientific << std::setprecision(9)
               << "Irrep Unmixing Values;\t|[G, H]|/(|G||H|) = " << G_lie_H_norm
-              << ";\tnormalize|Eta| = " << Eta_norm
+              << ";\tnormalize|Eta(G, H)| = " << Eta_norm
               << ";" << std::endl;
 
     *Eta = std::move(new_Eta);
