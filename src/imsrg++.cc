@@ -1142,6 +1142,7 @@ int main(int argc, char** argv)
     std::cout << std::scientific << std::setprecision(9) << "casimir file:\t" << casimir << ";\t|G| = " << G_norm << ";" << std::endl;
 
     imsrgsolver.SetCasimir(std::move(G));
+    imsrgsolver.GetGenerator().SetEMax(modelspace.GetEmax()); // the unmixing generator needs to know the emax
 
 
   }

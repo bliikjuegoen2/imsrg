@@ -674,6 +674,8 @@ PYBIND11_MODULE(pyIMSRG, m)
 
       py::class_<Generator>(m, "Generator")
           .def(py::init<>())
+          .def("SetCasimir", &Generator::SetCasimir, py::arg("casimir_operator"))
+          .def("SetEMax", &Generator::SetEMax, py::arg("emax"))
           .def("SetType", &Generator::SetType, py::arg("gen_type"))
           .def("SetDenominatorPartitioning", &Generator::SetDenominatorPartitioning, py::arg("Moller_Plessett or Epstein_Nesbet"))
           .def("SetUseIsospinAveraging", &Generator::SetUseIsospinAveraging, py::arg("tf"))

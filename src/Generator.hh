@@ -32,6 +32,7 @@ class Generator
   Operator * H;
   Operator * Eta;
   const Operator * G;
+  size_t emax; // need this to normalize the unmixing generator
 
  public:
 
@@ -74,6 +75,7 @@ class Generator
 
 
   void SetCasimir(const Operator& new_G);
+  void SetEMax(size_t EMax);
   void ConstructGenerator_IrrepUnmixing();
   void ConstructGenerator_SingleRef(std::function<double (double,double)>& etafunc );
   void ConstructGenerator_SingleRef_3body(std::function<double (double,double)>& etafunc );

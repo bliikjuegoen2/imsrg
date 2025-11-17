@@ -7,6 +7,7 @@
 #include "omp.h"
 #include <string>
 #include <iomanip>
+#include <cmath>
 
 using PhysConst::M_NUCLEON;
 using PhysConst::HBARC;
@@ -20,7 +21,7 @@ std::function<double(double,double)> Generator::qtransferatan1_func = [](double 
 
 Generator::Generator()
   : generator_type("white"),/* modelspace(NULL),*/ denominator_cutoff(1e-6)  , denominator_delta(0), denominator_delta_index(-1), denominator_partitioning(Epstein_Nesbet),  only_2b_eta(false), use_isospin_averaging(false), only_1b_eta(false),
-    H(nullptr), Eta(nullptr), G(nullptr)
+    H(nullptr), Eta(nullptr), G(nullptr), emax(0)
 {}
 
 
@@ -259,7 +260,9 @@ double Generator::Get2bDenominator_Jdep(int ch, int ibra, int iket)
    return denominator;
 }
 
-
+void Generator::SetEMax(size_t EMax) {
+    emax = EMax;
+}
 
 void Generator::SetCasimir(const Operator &new_G) {
    G = &new_G;
@@ -273,6 +276,12 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
         return;
     }
 
+    if (emax == 0) {
+        std::cerr << "[Error] : emax is unset! Must use Generator::SetEmax to use the unmixing generator!" << std::endl;
+        *Eta = 0*(*H);
+        return;
+    }
+
     double H_norm = H->Norm();
     double G_norm = G->Norm();
 
@@ -281,6 +290,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
 
     // normalize commutator
     G_lie_H /= (G_norm * H_norm) + 1e-100;
+    G_lie_H *= std::pow(emax, 2.3);
 
     double G_lie_H_norm = G_lie_H.Norm();
 
@@ -289,6 +299,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
 
     // normalize Eta
     new_Eta /= (H_norm * G_norm) + 1e-100;
+    new_Eta *= std::pow(emax, 4.3);
 
     double Eta_norm = new_Eta.Norm();
 
