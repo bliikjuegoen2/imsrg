@@ -803,10 +803,10 @@ double TwoBodyME::magnitude() const {
     double tr = trace();
     double norm = Norm();
 
-    double tr_scaled = 1/N*tr;
-    double norm_scaled = 1/N*norm;
+    double norm2 = norm*norm;
+    double tr2 = tr*tr;
 
-    double mag = norm_scaled - tr_scaled * tr_scaled;
+    double mag = sqrt(norm2/N - tr2/(N*N));
 
 
     return mag;
@@ -924,15 +924,21 @@ double TwoBodyME::trace() const {
     }
 
     for (const auto &item : MatEl) {
-       const auto &ch = item.first;
        const auto &matrix = item.second;
 
-       if(ch[0] != ch[1]) {
+       const auto &ch = item.first;
+       size_t ch_bra = ch[0];
+       size_t ch_ket = ch[1];
+
+
+       if(ch_bra != ch_ket) {
            // ignore off diagonal terms
            continue;
        }
 
-       trace_value += arma::trace(matrix);
+       double trace_block = arma::trace(matrix);
+
+       trace_value += trace_block;
 
     }
 

@@ -155,14 +155,17 @@ double Operator::magnitude() const {
   int N = modelspace->GetNumberOrbits();
 
   double tr = arma::trace(OneBody);
-  double norm = arma::norm(OneBody);
+  double norm = arma::norm(OneBody, "fro");
 
-  double tr_scaled = 1/N*tr;
-  double norm_scaled = 1/N*norm;
+  double tr2 = tr*tr;
+  double norm2 = norm*norm;
 
-  double ob_mag = norm_scaled - tr_scaled*tr_scaled;
+  double ob2_mag = norm2/N - tr2/(N*N);
 
-  return TwoBody.magnitude() + ob_mag;
+  double tb_mag = TwoBody.magnitude();
+  double tb2_mag = tb_mag * tb_mag;
+
+  return sqrt(ob2_mag + tb2_mag);
 
 }
 
