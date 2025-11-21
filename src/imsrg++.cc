@@ -145,7 +145,13 @@ Operator read_operator(
       op.TwoBody = std::move(optmp.TwoBody);
     }
     std::cout << "three body from:\t" << opff.file3name << ";" << std::endl;
-    if ( opff.r>2 and opff.file3name != "")  rw.Read_Darmstadt_3body( opff.file3name, op,  file3e1max,file3e2max,file3e3max);
+    if ( opff.r>2 and opff.file3name != "") {
+      rw.Read_Darmstadt_3body( opff.file3name, op,  file3e1max,file3e2max,file3e3max);
+
+      if(! rw.on_successful_io()) {
+        exit(EXIT_FAILURE);
+      }
+    }
   }
   else if (input_op_fmt == "shell-me2j") {
     if (opff.file2name != "")
@@ -491,8 +497,13 @@ int main(int argc, char** argv)
 
   if (inputtbme != "none")
   {
-    if (fmt2 == "me2j")
+    if (fmt2 == "me2j") {
       rw.ReadBareTBME_Darmstadt(inputtbme, Hbare,file2e1max,file2e2max,file2lmax);
+
+      if(! rw.on_successful_io()) {
+        exit(EXIT_FAILURE);
+      }
+    }
     else if (fmt2 == "navratil" or fmt2 == "Navratil")
       rw.ReadBareTBME_Navratil(inputtbme, Hbare);
     else if (fmt2 == "oslo" )
@@ -524,6 +535,10 @@ int main(int argc, char** argv)
     if(input3bme_type == "full")
     {
       rw.Read_Darmstadt_3body(input3bme, Hbare, file3e1max,file3e2max,file3e3max);
+
+      if(! rw.on_successful_io()) {
+        exit(EXIT_FAILURE);
+      }
     }
     if(input3bme_type == "no2b")
     {

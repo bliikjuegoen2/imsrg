@@ -685,7 +685,10 @@ void ReadWrite::ReadBareTBME_Darmstadt( std::string filename, Operator& Hbare, i
     std::cout << std::endl << "========================================" << std::endl;
     std::cout <<  __func__ << "  No such file : " << filename;
     std::cout << std::endl << "========================================" << std::endl;
-    std::exit(EXIT_FAILURE);
+    // should not panic!
+    // std::exit(EXIT_FAILURE);
+    failing_io();
+    return;
   }
 
   File2N = filename;
@@ -6493,6 +6496,14 @@ void ReadWrite::write_shell_me2j(std::string filename
      failing_io();
      return;
   }
+
+  // should be on top before any writes
+  if (op.GetJRank()!=0 || op.GetParity()!=0 || op.GetTRank()!=0) {
+    std::cerr << "ERROR: Provided operator has unsupported (J0,g0,Tz0)!=(0,0,0). Will write garbage!" << std::endl;
+    failing_io();
+    return; // should stop here, will write garbage
+  }
+
   ModelSpace& modelspace = *op.GetModelSpace();
 
   boost::iostreams::filtering_ostream zipstream;
@@ -6523,11 +6534,6 @@ void ReadWrite::write_shell_me2j(std::string filename
     write_me(0);
     write_me(0);
   };
-
-  if (op.GetJRank()!=0 || op.GetParity()!=0 || op.GetTRank()!=0) {
-    std::cerr << "ERROR: Provided operator has unsupported (J0,g0,Tz0)!=(0,0,0). Will write garbage!" << std::endl;
-    failing_io();
-  }
 
   std::cerr << "Writing me2j operator to: " << filename << std::endl;
 

@@ -793,6 +793,25 @@ double TwoBodyME::Norm() const
    return sqrt(nrm);
 }
 
+double TwoBodyME::magnitude() const {
+    if (! allocated) {
+        return 0;
+    }
+
+    int N = dim();
+
+    double tr = trace();
+    double norm = Norm();
+
+    double tr_scaled = 1/N*tr;
+    double norm_scaled = 1/N*norm;
+
+    double mag = norm_scaled - tr_scaled * tr_scaled;
+
+
+    return mag;
+}
+
 
 // arma::symmatu reflects the upper triangle to the lower triangle
 // the upper triangle are the elements Mat(ibra,iket) with ibra<=iket
@@ -881,6 +900,43 @@ int TwoBodyME::size()
   for ( auto& itmat : MatEl )
      size += itmat.second.size();
   return size*sizeof(double);
+}
+
+int TwoBodyME::dim() const {
+    int num = 0;
+
+    if (! allocated) {
+        return 0;
+    }
+
+    for (size_t ch = 0; ch < nChannels; ++ch) {
+        const TwoBodyChannel &tbc = modelspace->GetTwoBodyChannel(ch);
+        num += tbc.GetNumberKets();
+    }
+    return num;
+}
+
+double TwoBodyME::trace() const {
+    double trace_value = 0;
+
+    if(! allocated) {
+        return 0;
+    }
+
+    for (const auto &item : MatEl) {
+       const auto &ch = item.first;
+       const auto &matrix = item.second;
+
+       if(ch[0] != ch[1]) {
+           // ignore off diagonal terms
+           continue;
+       }
+
+       trace_value += arma::trace(matrix);
+
+    }
+
+    return trace_value;
 }
 
 

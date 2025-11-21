@@ -163,6 +163,7 @@ class TwoBodyME
   void Erase();
   void Scale(double);
   double Norm() const;
+  double magnitude() const;
   void Symmetrize();
   void AntiSymmetrize();
   void Eye();
@@ -171,6 +172,8 @@ class TwoBodyME
 //  void PrintMatrix(size_t chbra,size_t chket) const {std::cout.precision(12); MatEl.at({chbra,chket}).raw_print();};
   int Dimension();
   int size();
+  int dim() const;
+  double trace() const;
 
   void WriteBinary(std::ofstream&);
   void ReadBinary(std::ifstream&);

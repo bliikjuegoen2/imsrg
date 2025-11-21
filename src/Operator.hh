@@ -113,6 +113,11 @@ class Operator
 
   //Methods
 
+  // unmixing methods
+  int dim_TBME() const;
+  double trace() const;
+  double magnitude() const;
+
   // One body setter/getters
   double GetOneBody(int i,int j) {return OneBody(i,j);};
   void   SetOneBody(int i, int j, double val) ;

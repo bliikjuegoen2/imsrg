@@ -129,6 +129,43 @@ void Operator::print_matrix_keys() const
   TwoBody.print_matrix_keys();
 }
 
+int Operator::dim_TBME() const {
+  if(ThreeBody.IsAllocated()) {
+    std::cerr << "Operator::dim only operates on TBME!" << std::endl;
+  }
+
+  return TwoBody.dim();
+}
+
+double Operator::trace() const {
+  if(ThreeBody.IsAllocated()) {
+    std::cerr << "Operator::dim only operates on TBME!" << std::endl;
+  }
+
+  return TwoBody.trace() + arma::trace(OneBody) + ZeroBody;
+}
+
+double Operator::magnitude() const {
+  if(ThreeBody.IsAllocated()) {
+    std::cerr << "Operator::dim only operates on TBME!" << std::endl;
+  }
+
+  // the magnitude a zero body operator is 0
+
+  int N = modelspace->GetNumberOrbits();
+
+  double tr = arma::trace(OneBody);
+  double norm = arma::norm(OneBody);
+
+  double tr_scaled = 1/N*tr;
+  double norm_scaled = 1/N*norm;
+
+  double ob_mag = norm_scaled - tr_scaled*tr_scaled;
+
+  return TwoBody.magnitude() + ob_mag;
+
+}
+
 /////////////// OVERLOADED OPERATORS =,+,-,*,etc ////////////////////
 
 Operator &Operator::operator=(const Operator &rhs) = default;
