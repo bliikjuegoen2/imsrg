@@ -160,7 +160,9 @@ double Operator::magnitude() const {
   double tr2 = tr*tr;
   double norm2 = norm*norm;
 
-  double ob2_mag = norm2/N - tr2/(N*N);
+  double ob2_mag = norm2/N
+    // - tr2/(N*N)
+    ;
 
   double tb_mag = TwoBody.magnitude();
   double tb2_mag = tb_mag * tb_mag;
