@@ -52,7 +52,8 @@ class TwoBodyME
 {
  public:
   ModelSpace*  modelspace;
-  std::map<std::array<size_t,2>,arma::mat> MatEl;
+  using MatEl_t = std::map<std::array<size_t,2>,arma::mat>;
+  MatEl_t MatEl;
   size_t nChannels;
   bool hermitian;
   bool antihermitian;
@@ -184,6 +185,7 @@ class TwoBodyME
 TwoBodyME operator+(const TwoBodyME& lhs, const TwoBodyME& rhs);
 TwoBodyME operator-(const TwoBodyME& lhs, const TwoBodyME& rhs);
 TwoBodyME operator*(const double lhs, const TwoBodyME& rhs);
+
 
 
 #endif

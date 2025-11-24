@@ -1888,6 +1888,22 @@ void Operator::AntiSymmetrize()
   TwoBody.AntiSymmetrize();
 }
 
+Operator make_eye(ModelSpace &modelspace
+                  , int Jrank, int Trank, int Parity, int part_rank
+                  , bool has_obme, bool has_tbme) {
+  Operator eye{modelspace, Jrank, Trank, Parity, part_rank};
+
+  if(has_obme) {
+    eye.OneBody.eye();
+  }
+
+  if(has_tbme) {
+    eye.TwoBody.Eye();
+  }
+
+  return eye;
+}
+
 /*
 // Modified version of GetMP2_Energy. Determines each orbital's impact on the total MP2 energy
 // (i.e., by how much would EMP2 change if this single orbital were removed)

@@ -916,15 +916,11 @@ int TwoBodyME::dim() const {
     return num;
 }
 
-double TwoBodyME::trace() const {
-    double trace_value = 0;
+template<typename MatEl_t, typename Fn>
+void on_diagonal(MatEl_t &MatEl, Fn fn) {
 
-    if(! allocated) {
-        return 0;
-    }
-
-    for (const auto &item : MatEl) {
-       const auto &matrix = item.second;
+    for (auto &item : MatEl) {
+       auto &matrix = item.second;
 
        const auto &ch = item.first;
        size_t ch_bra = ch[0];
@@ -936,11 +932,24 @@ double TwoBodyME::trace() const {
            continue;
        }
 
-       double trace_block = arma::trace(matrix);
-
-       trace_value += trace_block;
+       // bra = ket; only one is needed
+       fn(ch_bra, matrix);
 
     }
+}
+
+double TwoBodyME::trace() const {
+    double trace_value = 0;
+
+    if(! allocated) {
+        return 0;
+    }
+
+    on_diagonal(MatEl, [&trace_value](size_t ch, const arma::mat &block){
+        double block_trace = arma::trace(block);
+
+        trace_value += block_trace;
+    });
 
     return trace_value;
 }

@@ -739,13 +739,21 @@ target_link_libraries(
 #)
 
 if(IMSRG_BUILD_PYTHON_BINDINGS)
+    set(PY_VENV_SITE_PACKAGES "$ENV{PY_VENV_PATH}/lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages")
     pybind11_add_module(pyIMSRG pyIMSRG.cc)
+
     target_link_libraries(
         pyIMSRG
         PRIVATE
         IMSRG
     )
     set_target_properties(pyIMSRG PROPERTIES SUFFIX ".so")
+    set_target_properties(pyIMSRG PROPERTIES
+        BUILD_RPATH "$ORIGIN"
+        INSTALL_RPATH "$ORIGIN"
+    )
+    install(TARGETS pyIMSRG IMSRG
+        LIBRARY DESTINATION ${PY_VENV_SITE_PACKAGES})
 endif()
 
 # Install imsrg executable

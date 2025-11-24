@@ -239,7 +239,9 @@ class Operator
 Operator operator*(const double lhs, const Operator& rhs);
 Operator operator*(const double lhs, const Operator&& rhs);
 
-
+Operator make_eye(ModelSpace&
+                  , int Jrank, int Trank, int Parity, int part_rank
+                  , bool has_obme, bool has_tbme);
 
 #endif
 

@@ -1024,6 +1024,10 @@ PYBIND11_MODULE(pyIMSRG, m)
 
       m.def("BuildVersion", version::BuildVersion);
 
+      m.def("make_eye", make_eye
+            , py::arg("modelspace")
+            , py::arg("Jrank"), py::arg("Trank"), py::arg("Parity"), py::arg("Rank")
+            , py::arg("has_obme"), py::arg("has_tbme"));
       m.def("TCM_Op", imsrg_util::TCM_Op);
       m.def("Trel_Op", imsrg_util::Trel_Op);
       m.def("R2CM_Op", imsrg_util::R2CM_Op);
