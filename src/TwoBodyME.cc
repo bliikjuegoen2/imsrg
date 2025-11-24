@@ -2,6 +2,7 @@
 #include "TwoBodyME.hh"
 #include "AngMom.hh"
 #include "PhysicalConstants.hh" // for SQRT2
+#include <limits>
 //#ifndef SQRT2
 //  #define SQRT2 1.4142135623730950488
 //#endif
@@ -794,6 +795,9 @@ double TwoBodyME::Norm() const
 }
 
 double TwoBodyME::magnitude() const {
+
+    constexpr float epsilon = 1e-15;
+
     if (! allocated) {
         return 0;
     }
@@ -806,7 +810,9 @@ double TwoBodyME::magnitude() const {
     double norm2 = norm*norm;
     double tr2 = tr*tr;
 
-    double mag = sqrt(norm2/N - tr2/(N*N));
+    // the epsilon is needed because this sum might go negative due to numerical noise
+    double mag2 = norm2/N - tr2/(N*N) + epsilon;
+    double mag = sqrt(mag2);
 
 
     return mag;
@@ -855,6 +861,9 @@ void TwoBodyME::Eye()
    for ( auto& itmat : MatEl )
    {
       arma::mat& matrix = itmat.second;
+      if(matrix.n_cols != matrix.n_rows) {
+          std::cerr << "warning matrix: cols[" << matrix.n_cols << "] != rows[" << matrix.n_rows << "];" << std::endl;
+      }
       matrix.eye();
    }
 }
@@ -906,12 +915,16 @@ int TwoBodyME::dim() const {
     int num = 0;
 
     if (! allocated) {
-        return 0;
+        return -1;
     }
 
     for (size_t ch = 0; ch < nChannels; ++ch) {
         const TwoBodyChannel &tbc = modelspace->GetTwoBodyChannel(ch);
-        num += tbc.GetNumberKets();
+        int Jch = tbc.J;
+        int sqrt_degeneracy = (2*Jch+1);
+        int degeneracy =  sqrt_degeneracy*sqrt_degeneracy;
+
+        num += tbc.GetNumberKets() * degeneracy;
     }
     return num;
 }
@@ -942,11 +955,21 @@ double TwoBodyME::trace() const {
     double trace_value = 0;
 
     if(! allocated) {
-        return 0;
+        return std::numeric_limits<double>::quiet_NaN();
     }
 
-    on_diagonal(MatEl, [&trace_value](size_t ch, const arma::mat &block){
-        double block_trace = arma::trace(block);
+    on_diagonal(MatEl, [this, &trace_value](size_t ch, const arma::mat &block){
+
+        if(block.n_rows != block.n_cols) {
+            trace_value = std::numeric_limits<double>::quiet_NaN();
+            return;
+        }
+
+        int Jch = modelspace->GetTwoBodyChannel( ch ).J;
+        int sqrt_degeneracy = (2*Jch+1);
+        int degeneracy =  sqrt_degeneracy*sqrt_degeneracy;
+
+        double block_trace = arma::trace(block) * degeneracy;
 
         trace_value += block_trace;
     });
