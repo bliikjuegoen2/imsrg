@@ -9,8 +9,10 @@
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
+#include <optional>
 
 namespace py = pybind11;
+
 
 //  Orbit MS_GetOrbit(ModelSpace& self, int i){ return self.GetOrbit(i);};
 //  size_t MS_GetOrbitIndex_Str(ModelSpace& self, std::string s){ return self.GetOrbitIndex(s);};
@@ -35,6 +37,92 @@ namespace py = pybind11;
 PYBIND11_MODULE(pyIMSRG, m)
 {
       m.doc() = "python bindings for IMSRG code";
+
+      py::class_<arma::mat>(m, "ArmaMat")
+          .def(py::init<>())
+          .def(
+              "zeros", [](arma::mat &self, int nrows, int ncols)
+              { self.zeros(nrows, ncols); },
+              py::arg("nrows"), py::arg("ncols"))
+          .def("Print", [](arma::mat &self)
+               { self.print(); }) //   &ArmaMatPrint)
+          .def("__str__", [](arma::mat &self)
+               { std::ostringstream oss; oss << self; return oss.str(); }) //   &ArmaMatPrint)
+          .def(
+              "save", [](arma::mat &self, std::string fname)
+              { self.save(fname); },
+              py::arg("filename"))
+          .def(
+              "load", [](arma::mat &self, std::string fname)
+              { self.load(fname); },
+              py::arg("filename"))
+          //      .def("t", &arma::mat::t) // transpose
+          .def("t", [](arma::mat &self)
+               {arma::mat x = self.t(); return x; }) // transpose
+          .def(py::self *= double())
+          //      .def(py::self * double())
+          //      .def(double() * py::self)
+          //      .def(double() * py::self, [](double x, arma::mat& self){arma::mat out = x * self; return out;} )
+          // this produces a lsp error
+        // .def(py::self /= double())
+          //.def(py::self / double())
+        .def("__itruediv__", [](arma::mat &A, double x){
+          A /= x;
+          return A;
+        })
+        .def("__truediv__", [](const arma::mat &A, double x){
+          arma::mat C = A/x;
+          return C;
+        })
+          //      .def(py::self += ArmaMat())
+          //      .def(py::self + ArmaMat())
+          //      .def(py::self -= ArmaMat())
+          //      .def(py::self - ArmaMat())
+          .def(
+              "__mul__", [](const arma::mat &A, const arma::mat &B)
+              {arma::mat C = A * B; return C; },
+              py::is_operator())
+          .def(
+              "__mul__", [](const arma::mat &B, float A)
+              {arma::mat C = A * B; return C; },
+              py::is_operator())
+          //      .def("__mul__", [](float A, const arma::mat& B){arma::mat C = A * B; return C;}, py::is_operator() )
+          .def(
+              "__add__", [](const arma::mat &A, const arma::mat &B)
+              {arma::mat C = A + B; return C; },
+              py::is_operator())
+          .def(
+              "__sub__", [](const arma::mat &A, const arma::mat &B)
+              {arma::mat C = A - B; return C; },
+              py::is_operator())
+          .def(
+              "__call__", [](arma::mat &self, const int i, const int j)
+              { return &self(i, j); },
+              py::is_operator())
+          .def(
+              "Set", [](arma::mat &self, const int i, const int j, double x)
+              { self(i, j) = x; },
+              py::arg("i"), py::arg("j"), py::arg("matel"))
+          .def("Getn_rows", [](arma::mat &self)
+               { return self.n_rows; })
+          .def("Getn_cols", [](arma::mat &self)
+               { return self.n_cols; })
+          .def("Schur_Prod", [](arma::mat &self, arma::mat &other)
+               { arma::mat out = self % other;return out; })
+          .def("Norm", [](arma::mat &self)
+               { return arma::norm(self, "fro"); })
+          .def("trace", [](arma::mat &self)
+               { double t =arma::trace(self); return t; })
+          .def("sum", [](arma::mat &self)
+               {double s= arma::accu(self); return s; });
+
+      py::enum_<ThreeBodyStorage::Permutation>(m, "ThreeBodyStorage_Permutation").value("ABC", ThreeBodyStorage::ABC)
+        .value("BCA", ThreeBodyStorage::BCA)
+        .value("CAB", ThreeBodyStorage::CAB)
+        .value("ACB", ThreeBodyStorage::ACB)
+        .value("BAC", ThreeBodyStorage::BAC)
+        .value("CBA", ThreeBodyStorage::CBA)
+        .export_values();
 
       py::class_<Orbit>(m, "Orbit")
           .def(py::init<>())
@@ -288,75 +376,6 @@ PYBIND11_MODULE(pyIMSRG, m)
               py::arg("filename"))
           //      .def("IsospinProject", &Operator::IsospinProject)
           ;
-
-      py::class_<arma::mat>(m, "ArmaMat")
-          .def(py::init<>())
-          .def(
-              "zeros", [](arma::mat &self, int nrows, int ncols)
-              { self.zeros(nrows, ncols); },
-              py::arg("nrows"), py::arg("ncols"))
-          .def("Print", [](arma::mat &self)
-               { self.print(); }) //   &ArmaMatPrint)
-          .def("__str__", [](arma::mat &self)
-               { std::ostringstream oss; oss << self; return oss.str(); }) //   &ArmaMatPrint)
-          .def(
-              "save", [](arma::mat &self, std::string fname)
-              { self.save(fname); },
-              py::arg("filename"))
-          .def(
-              "load", [](arma::mat &self, std::string fname)
-              { self.load(fname); },
-              py::arg("filename"))
-          //      .def("t", &arma::mat::t) // transpose
-          .def("t", [](arma::mat &self)
-               {arma::mat x = self.t(); return x; }) // transpose
-          .def(py::self *= double())
-          //      .def(py::self * double())
-          //      .def(double() * py::self)
-          //      .def(double() * py::self, [](double x, arma::mat& self){arma::mat out = x * self; return out;} )
-          .def(py::self /= double())
-          .def(py::self / double())
-          //      .def(py::self += ArmaMat())
-          //      .def(py::self + ArmaMat())
-          //      .def(py::self -= ArmaMat())
-          //      .def(py::self - ArmaMat())
-          .def(
-              "__mul__", [](const arma::mat &A, const arma::mat &B)
-              {arma::mat C = A * B; return C; },
-              py::is_operator())
-          .def(
-              "__mul__", [](const arma::mat &B, float A)
-              {arma::mat C = A * B; return C; },
-              py::is_operator())
-          //      .def("__mul__", [](float A, const arma::mat& B){arma::mat C = A * B; return C;}, py::is_operator() )
-          .def(
-              "__add__", [](const arma::mat &A, const arma::mat &B)
-              {arma::mat C = A + B; return C; },
-              py::is_operator())
-          .def(
-              "__sub__", [](const arma::mat &A, const arma::mat &B)
-              {arma::mat C = A - B; return C; },
-              py::is_operator())
-          .def(
-              "__call__", [](arma::mat &self, const int i, const int j)
-              { return &self(i, j); },
-              py::is_operator())
-          .def(
-              "Set", [](arma::mat &self, const int i, const int j, double x)
-              { self(i, j) = x; },
-              py::arg("i"), py::arg("j"), py::arg("matel"))
-          .def("Getn_rows", [](arma::mat &self)
-               { return self.n_rows; })
-          .def("Getn_cols", [](arma::mat &self)
-               { return self.n_cols; })
-          .def("Schur_Prod", [](arma::mat &self, arma::mat &other)
-               { arma::mat out = self % other;return out; })
-          .def("Norm", [](arma::mat &self)
-               { return arma::norm(self, "fro"); })
-          .def("trace", [](arma::mat &self)
-               { double t =arma::trace(self); return t; })
-          .def("sum", [](arma::mat &self)
-               {double s= arma::accu(self); return s; });
 
       py::class_<TwoBodyME>(m, "TwoBodyME")
           .def(py::init<>())
