@@ -761,6 +761,7 @@ if(IMSRG_BUILD_PYTHON_BINDINGS)
     )
     install(TARGETS pyIMSRG
         LIBRARY DESTINATION ${INSTALL_SITE_PACKAGES})
+
 endif()
 
 # Install imsrg executable
@@ -792,3 +793,19 @@ add_test(NAME Factorized   COMMAND  python3 ../test/UnitTestFactorized.py )
 add_test(NAME Triples      COMMAND  python3 ../test/UnitTestTriples.py )
 add_test(NAME Tensor       COMMAND  python3 ../test/UnitTestTensor.py )
 add_test(NAME NormalOrdering    COMMAND  python3 ../test/UnitTestNormalOrdering.py )
+
+
+# should be ran last
+if(IMSRG_BUILD_PYTHON_BINDINGS)
+    set(INSTALL_SITE_PACKAGES ${INSTALL_LIB_DIR}/site-packages)
+    install(CODE "
+        message(\"generating stubs at ${INSTALL_SITE_PACKAGES}\")
+        execute_process(
+            COMMAND python -m pybind11_stubgen pyIMSRG -o ${INSTALL_SITE_PACKAGES}
+            RESULT_VARIABLE res
+        )
+        if(NOT res EQUAL 0)
+              message(FATAL_ERROR \"pybind11_stubgen failed\")
+        endif()"
+    )
+endif()
