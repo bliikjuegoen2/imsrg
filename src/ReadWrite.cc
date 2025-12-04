@@ -6455,14 +6455,19 @@ Operator ReadWrite::read_shell_me2j(std::string filename
 
       // do not write if model space cut off has been reached
 
+
+      bool J_even = false;
+
       if (norm_factor>0.9 or J%2==0)
       {
+        J_even = true;
         op.TwoBody.SetTBME(J,parity,-1,a,b,c,d,tbme_pp*norm_factor);
         op.TwoBody.SetTBME(J,parity,1,a+1,b+1,c+1,d+1,tbme_nn*norm_factor);
         op.TwoBody.Set_pn_TBME_from_iso(J,1,0,a,b,c,d,tbme_10*norm_factor);
       }
       if (norm_factor>0.9 or J%2!=0)
       {
+        J_odd = false;
         op.TwoBody.Set_pn_TBME_from_iso(J,0,0,a,b,c,d,tbme_00*norm_factor);
       }
 

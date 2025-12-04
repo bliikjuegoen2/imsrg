@@ -46,6 +46,7 @@ namespace imsrg_util
  Operator  OneBodyDensity(ModelSpace& modelspace,index_t i,index_t j);
  Operator PSquaredOp(ModelSpace& modelspace);
  Operator RSquaredOp(ModelSpace& modelspace);
+ Operator J2Op(ModelSpace& modelspace);
  Operator E0Op(ModelSpace& modelspace);
  Operator AnapoleMoment(ModelSpace &modelspace);
  Operator MultipoleResponseOp(ModelSpace &modelspace, int rL, int YL, int isospin);
