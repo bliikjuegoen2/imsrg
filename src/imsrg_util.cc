@@ -534,7 +534,7 @@ namespace imsrg_util
       }
       else //need to remove from the list
       {
-         std::cout << "Unknown operator: " << opname << std::endl;
+         std::cerr << "Unknown operator: " << opname << std::endl;
       }
 //      theop =  Operator();
       theop.profiler.timer[opname] += omp_get_wtime() - t_start;
