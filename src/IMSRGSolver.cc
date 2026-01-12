@@ -154,11 +154,11 @@ void IMSRGSolver::Reset()
   NewOmega();
 }
 
-void IMSRGSolver::SetCasimir(Operator new_G) {
+void IMSRGSolver::SetCasimir(std::vector<Operator> new_Gs) {
 
-  G = std::move(new_G);
+  Gs = std::move(new_Gs);
 
-  generator.SetCasimir(G);
+  generator.SetCasimir(Gs);
 
 }
 

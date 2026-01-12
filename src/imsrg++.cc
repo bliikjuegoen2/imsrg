@@ -199,7 +199,7 @@ int main(int argc, char** argv)
   std::string physical_system = parameters.s("physical_system");
   std::string denominator_partitioning = parameters.s("denominator_partitioning");
   std::string NAT_order = parameters.s("NAT_order");
-  std::string casimir = parameters.s("casimir");
+  std::vector<std::string> casimir = parameters.v("casimir");
 
   bool use_brueckner_bch = parameters.s("use_brueckner_bch") == "true";
   bool nucleon_mass_correction = parameters.s("nucleon_mass_correction") == "true";
@@ -1141,22 +1141,33 @@ int main(int argc, char** argv)
    }
   }
 
-  if(casimir != "") {
+  if(!casimir.empty()) {
 
     std::cout << "reading casimir" << std::endl;
 
-    auto casimir_metadata = get_op_metadata(casimir);
-    std::cout << "retrieved casimir metadata" << std::endl;
+    std::vector<Operator> Gs;
 
-    // might be modelspace_imsrg? all other instances used modelspace
-    // G = -casmir operator from the Johnson paper
-    Operator G = -read_operator(casimir_metadata, modelspace, rw, input_op_fmt,file3e1max, file3e2max, file3e3max);
+    Gs.reserve(casimir.size());
 
-    double G_norm = G.Norm();
+    for (const auto &filename : casimir) {
+        auto casimir_metadata = get_op_metadata(filename);
 
-    std::cout << std::scientific << std::setprecision(9) << "casimir file:\t" << casimir << ";\t|G| = " << G_norm << ";" << std::endl;
+        // might be modelspace_imsrg? all other instances used modelspace
+        // G = -casmir operator from the Johnson paper
+        auto G = -read_operator(casimir_metadata, modelspace, rw, input_op_fmt,file3e1max, file3e2max, file3e3max);
 
-    imsrgsolver.SetCasimir(std::move(G));
+        double G_norm = G.Norm();
+        
+        std::cout << std::scientific << std::setprecision(9) << "casimir file:\t" << filename << ";\t|G| = " << G_norm << ";" << std::endl;
+        Gs.emplace_back(std::move(G));
+
+    }
+
+std::cout << "retrieved casimir metadata" << std::endl;
+
+
+
+    imsrgsolver.SetCasimir(std::move(Gs));
     imsrgsolver.GetGenerator().SetEMax(modelspace.GetEmax()); // the unmixing generator needs to know the emax
 
 

@@ -24,6 +24,7 @@
 #include "Operator.hh"
 
 #include <string>
+#include <random>
 
 
 class Generator
@@ -31,8 +32,11 @@ class Generator
  protected: //DK: Was private. Changed to inherit into GeneratorPV 
   Operator * H;
   Operator * Eta;
-  const Operator * G;
+  const std::vector<Operator> * Gs;
   size_t emax; // need this to normalize the unmixing generator
+
+  std::mt19937 rng;
+  std::normal_distribution<double> normal;
 
  public:
 
@@ -74,7 +78,8 @@ class Generator
 
 
 
-  void SetCasimir(const Operator& new_G);
+  void SetCasimir(const std::vector<Operator>& new_G);
+  Operator get_G();
   void SetEMax(size_t EMax);
   void ConstructGenerator_IrrepUnmixing();
   void ConstructGenerator_SingleRef(std::function<double (double,double)>& etafunc );

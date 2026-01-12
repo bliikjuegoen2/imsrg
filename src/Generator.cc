@@ -8,6 +8,7 @@
 #include <string>
 #include <iomanip>
 #include <cmath>
+#include <ranges>
 
 using PhysConst::M_NUCLEON;
 using PhysConst::HBARC;
@@ -21,7 +22,7 @@ std::function<double(double,double)> Generator::qtransferatan1_func = [](double 
 
 Generator::Generator()
   : generator_type("white"),/* modelspace(NULL),*/ denominator_cutoff(1e-6)  , denominator_delta(0), denominator_delta_index(-1), denominator_partitioning(Epstein_Nesbet),  only_2b_eta(false), use_isospin_averaging(false), only_1b_eta(false),
-    H(nullptr), Eta(nullptr), G(nullptr), emax(0)
+    H(nullptr), Eta(nullptr), Gs(nullptr), emax(0), rng(std::random_device{}()), normal(0.0,1.0)
 {}
 
 
@@ -264,17 +265,47 @@ void Generator::SetEMax(size_t EMax) {
     emax = EMax;
 }
 
-void Generator::SetCasimir(const Operator &new_G) {
-   G = &new_G;
+void Generator::SetCasimir(const std::vector<Operator> &new_G) {
+   Gs = &new_G;
+}
+
+Operator Generator::get_G() {
+
+    if(Gs == nullptr || Gs->size() == 0) {
+        std::cerr << "[Error] : Casimir Operator is set to null! Set Casimir Operator for Irrep Unmixing!" << std::endl;
+        return Operator();
+    }
+
+    std::vector<double> factors;
+    factors.reserve(Gs->size());
+
+    double factors_norm_sq = 0.0;
+
+    for (size_t i = 0; i < Gs->size(); i++)  {
+        auto factor = normal(rng);
+        factors.push_back(factor);
+        factors_norm_sq += factor*factor;
+    }
+
+    auto factors_norm = std::sqrt(factors_norm_sq);
+
+    for (auto &factor : factors) {
+        factor /= factors_norm + 1e-40;
+    }
+
+    auto G = Gs->at(0) * factors.at(0);
+    
+    for (size_t i = 1; i < Gs->size(); i++)  {
+        G += Gs->at(i) * factors.at(i);
+    }
+
+    return G;
+
 }
 
 void Generator::ConstructGenerator_IrrepUnmixing() {
 
-    if (G == nullptr) {
-        std::cerr << "[Error] : Casimir Operator is set to null! Set Casimir Operator for Irrep Unmixing!" << std::endl;
-        *Eta = 0*(*H);
-        return;
-    }
+    auto G = get_G();
 
     if (emax == 0) {
         std::cerr << "[Error] : emax is unset! Must use Generator::SetEmax to use the unmixing generator!" << std::endl;
@@ -283,10 +314,10 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     }
 
     double H_norm = H->magnitude();
-    double G_norm = G->magnitude();
+    double G_norm = G.magnitude();
 
     // [G, H]
-    Operator G_lie_H = Commutator::Commutator(*G, *H);
+    Operator G_lie_H = Commutator::Commutator(G, *H);
 
     // normalize commutator
     G_lie_H /= (G_norm * H_norm) + 1e-100;
@@ -294,7 +325,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     double G_lie_H_norm = G_lie_H.magnitude();
 
     // [[[G,H],H],G]
-    Operator new_Eta = Commutator::Commutator(Commutator::Commutator(G_lie_H, *H), *G);
+    Operator new_Eta = Commutator::Commutator(Commutator::Commutator(G_lie_H, *H), G);
 
     // normalize Eta
     new_Eta /= (H_norm * G_norm) + 1e-100;
@@ -678,15 +709,13 @@ void Generator::ConstructGenerator_1PA(std::function<double(double,double)>& eta
 
 
 Operator Generator::GetHod_IrrepUnmixing(Operator &H) {
-    if (G == nullptr) {
-        std::cerr << "[Error] : Casimir Operator is set to null! Set Casimir Operator for Irrep Unmixing!" << std::endl;
-        return 0*H;
-    }
+
+    auto G = get_G();
 
     // I am assuming the main property we care about for Hod is that -> 0
 
 
-    Operator Hod = Commutator::Commutator(*G, H);
+    Operator Hod = Commutator::Commutator(G, H);
 
     double norm = Hod.Norm();
 

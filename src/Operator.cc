@@ -1132,7 +1132,7 @@ void Operator::ApplyWignerEckartJFactor( bool multiply )
     {
       //      if (b<a) continue;
          OneBody(a, b) *= WE_factor;
-      //      OneBody(b,a) *= sqrt(oa.j2+1);
+         //      OneBody(b,a) *= sqrt(oa.j2+1);
     }
   }
   for (auto &itmat : TwoBody.MatEl)

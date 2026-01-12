@@ -44,7 +44,7 @@ class IMSRGSolver
   std::deque<Operator> FlowingOps;
   Operator H_saved;
   Operator Eta;
-  Operator G;
+  std::vector<Operator> Gs;
   std::deque<Operator> Omega;
   Generator generator;
   int istep;
@@ -120,7 +120,7 @@ class IMSRGSolver
   void SetdOmega(double d){norm_domega = d;};
   void SetSmax(double d){smax = d;};
   void SetGenerator(std::string g);
-  void SetCasimir(Operator new_G);
+  void SetCasimir(std::vector<Operator> new_Gs);
   void SetDenominatorPartitioning(std::string dp);
   void SetOmegaNormMax(double x){omega_norm_max = x;};
   void SetODETolerance(float x){ode_e_abs=x;ode_e_rel=x;};
