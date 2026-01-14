@@ -199,7 +199,6 @@ int main(int argc, char** argv)
   std::string physical_system = parameters.s("physical_system");
   std::string denominator_partitioning = parameters.s("denominator_partitioning");
   std::string NAT_order = parameters.s("NAT_order");
-  std::vector<std::string> casimir = parameters.v("casimir");
 
   bool use_brueckner_bch = parameters.s("use_brueckner_bch") == "true";
   bool nucleon_mass_correction = parameters.s("nucleon_mass_correction") == "true";
@@ -273,6 +272,7 @@ int main(int argc, char** argv)
   std::vector<std::string> opnamesPT1 = parameters.v("OperatorsPT1");
   std::vector<std::string> opnamesRPA = parameters.v("OperatorsRPA");
   std::vector<std::string> opnamesTDA = parameters.v("OperatorsTDA");
+  std::vector<std::string> casimir = parameters.v("casimir");
 
   std::vector<Operator> ops;
   std::vector<std::string> spwf = parameters.v("SPWF");

@@ -103,7 +103,6 @@ std::map<std::string,std::string> Parameters::string_par = {
   {"write_HO_ops",              "false"},       // Write the HO operator before doing the HF transormation ;  Added by Antoine Belley
   {"write_HF_ops",              "false"},       // Write the HF operators before doing IMSRG transformation ; Added by Antoine Belley
   {"denominator_partitioning",  "Epstein_Nesbet"}, // Denominators used in IMSRG generators. Can be Moller_Plesset or Epstein_Nesbet.
-  {"casimir",                    ""}
 };
 
 
@@ -154,6 +153,7 @@ std::map<std::string,std::vector<std::string>> Parameters::vec_par = {
  {"OperatorsRPA", {} },   // RPA resummed correction to (1b part of) operator.
  {"OperatorsTDA", {} },   // TDA resummed correction to (1b part of) operator.
  {"SPWF",{} }, // single-particle wave functions in HF basis
+ {"casimir", {} }
 };
 
 
