@@ -313,6 +313,8 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
         return;
     }
 
+    exit(0);
+
     double H_norm = H->magnitude();
     double G_norm = G.magnitude();
 
