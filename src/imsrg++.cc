@@ -1141,12 +1141,6 @@ int main(int argc, char** argv)
    }
   }
 
-  std::cout << "[casimir]" << std::endl;
-  for (auto filename : casimir) {
-      std::cout << filename << std::endl;
-  }
-  std::cout << "[\\casimir]" << std::endl;
-
   if(!casimir.empty()) {
 
     std::cout << "reading casimir" << std::endl;
