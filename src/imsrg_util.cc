@@ -101,6 +101,7 @@ namespace imsrg_util
       else if (opname == "Fermi")         theop =  AllowedFermi_Op(modelspace) ;
       else if (opname == "GamowTeller")   theop =  AllowedGamowTeller_Op(modelspace) ;
       else if (opname == "J2")            theop =  J2Op(modelspace) ;
+      else if (opname == "Spin2")         theop =  Spin2_Op(modelspace) ;
       else if (opname == "Iso2")          theop =  Isospin2_Op(modelspace) ;
       else if (opname == "Tz2")           theop =  TzSquared_Op(modelspace) ;
       else if (opname == "R2CM")          theop =  R2CM_Op(modelspace) ;
@@ -1762,6 +1763,73 @@ Operator J2Op(ModelSpace &modelspace)
     } // for ibra
   } // for ch
   return J2;
+}
+
+
+/// Returns the S^2 operator
+Operator Spin2_Op(ModelSpace& modelspace)
+{
+  Operator S2(modelspace, 0, 0, 0, 2);
+
+  // --- One-body part: s(s+1) = 3/4
+  S2.OneBody.diag().fill(0.75);
+
+  const double s = 0.5;
+
+  for (int ch = 0; ch < S2.nChannels; ++ch)
+  {
+    TwoBodyChannel& tbc = modelspace.GetTwoBodyChannel(ch);
+    arma::mat& TB = S2.TwoBody.GetMatrix(ch);
+
+    int J = tbc.J;
+
+    for (size_t ibra = 0; ibra < tbc.GetNumberKets(); ++ibra)
+    {
+      Ket& bra = tbc.GetKet(ibra);
+      Orbit& oa = modelspace.GetOrbit(bra.p);
+      Orbit& ob = modelspace.GetOrbit(bra.q);
+
+      for (size_t iket = ibra; iket < tbc.GetNumberKets(); ++iket)
+      {
+        Ket& ket = tbc.GetKet(iket);
+        Orbit& oc = modelspace.GetOrbit(ket.p);
+        Orbit& od = modelspace.GetOrbit(ket.q);
+
+        double me = 0.0;
+
+        // Allowed L,S
+        for (int S = 0; S <= 1; ++S)
+        {
+          double eigen = S*(S+1) - 1.5;
+
+          for (int L = std::abs(oa.l - ob.l);
+               L <= oa.l + ob.l; ++L)
+          {
+            if (std::abs(L - S) > J || L + S < J) continue;
+
+            double rec_bra = AngMom::NineJ(
+              oa.l, s, oa.j2*0.5,
+              ob.l, s, ob.j2*0.5,
+              L,    S, J
+            );
+
+            double rec_ket = AngMom::NineJ(
+              oc.l, s, oc.j2*0.5,
+              od.l, s, od.j2*0.5,
+              L,    S, J
+            );
+
+            me += (2*L+1)*(2*S+1) * rec_bra * rec_ket * eigen;
+          }
+        }
+
+        TB(ibra, iket) = me;
+        TB(iket, ibra) = me;
+      }
+    }
+  }
+
+  return S2;
 }
 
 
