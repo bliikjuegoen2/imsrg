@@ -22,7 +22,8 @@ IMSRGSolver::IMSRGSolver()
     : s(0), ds(0.1), ds_max(0.5),
       norm_domega(0.1), omega_norm_max(2.0), eta_criterion(1e-6), method("magnus_euler"),
       flowfile(""), n_omega_written(0), max_omega_written(500), magnus_adaptive(true), hunter_gatherer(false), perturbative_triples(false),
-      /*pert_triples_this_omega(0),pert_triples_sum(0),*/ ode_monitor(*this), ode_mode("H"), ode_e_abs(1e-6), ode_e_rel(1e-6)
+      /*pert_triples_this_omega(0),pert_triples_sum(0),*/ ode_monitor(*this), ode_mode("H"), ode_e_abs(1e-6), ode_e_rel(1e-6),
+      eta_threshhold(10)
 {
 }
 
@@ -32,7 +33,8 @@ IMSRGSolver::IMSRGSolver(Operator &H_in)
       istep(0), s(0), ds(0.1), ds_max(0.5),
       smax(2.0), norm_domega(0.1), omega_norm_max(2.0), eta_criterion(1e-6), method("magnus_euler"),
       flowfile(""), n_omega_written(0), max_omega_written(500), magnus_adaptive(true), hunter_gatherer(false), perturbative_triples(false),
-      /*pert_triples_this_omega(0),pert_triples_sum(0),*/ ode_monitor(*this), ode_mode("H"), ode_e_abs(1e-6), ode_e_rel(1e-6)
+      /*pert_triples_this_omega(0),pert_triples_sum(0),*/ ode_monitor(*this), ode_mode("H"), ode_e_abs(1e-6), ode_e_rel(1e-6),
+      eta_threshhold(10)
 {
   Eta.Erase();
   Eta.SetAntiHermitian();
@@ -249,6 +251,7 @@ void IMSRGSolver::UpdateEta()
 void IMSRGSolver::Solve_magnus_euler()
 {
   istep = 0;
+  int eta_tries = 0;
 
   generator.Update(FlowingOps[0], Eta);
   // Eta.PrintTwoBody();
@@ -272,7 +275,12 @@ void IMSRGSolver::Solve_magnus_euler()
     double norm_eta = Eta.Norm();
     if (norm_eta < eta_criterion)
     {
-      break;
+        eta_tries++;
+        std::cout << "|eta| = " << norm_eta << " has met criterion" << std::endl;
+    }
+    if (eta_tries > eta_threshhold) {
+        std::cout << "number of tries has been met" << std::endl;
+        break;
     }
     if (norm_eta > 1e12 or std::abs(Elast) > 1e9) // This is obviously going nowhere...
     {

@@ -59,6 +59,7 @@ class IMSRGSolver
   std::string flowfile;
   std::string scratchdir;
   IMSRGProfiler profiler;
+  int eta_threshhold;  
   int n_omega_written;
   int max_omega_written;
   bool magnus_adaptive;

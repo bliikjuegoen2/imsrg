@@ -6492,7 +6492,7 @@ void ReadWrite::write_shell_me2j(std::string filename
   if ( !outfile.good() )
   {
      std::cerr << "************************************" << std::endl
-          << "**    Trouble opening file  !!!   **" << std::endl
+          << "**    trouble opening file  !!!   **" << std::endl
           << "************************************" << std::endl;
 
      failing_io();
