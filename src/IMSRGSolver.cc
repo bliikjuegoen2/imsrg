@@ -276,7 +276,11 @@ void IMSRGSolver::Solve_magnus_euler()
     if (norm_eta < eta_criterion)
     {
         eta_tries++;
-        std::cout << "|eta| = " << norm_eta << " has met criterion" << std::endl;
+        std::cout << "|eta| = " << norm_eta << " has met criterion" << '\n'
+                  << "eta_tries = " << eta_tries << std::endl;
+    }
+    else {
+        eta_tries = 0;
     }
     if (eta_tries > eta_threshhold) {
         std::cout << "number of tries has been met" << std::endl;
