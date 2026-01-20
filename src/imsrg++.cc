@@ -64,7 +64,7 @@ struct OpFromFile {
    int j,p,t,r; // J rank, parity, dTz, particle rank
 };
 
-OpFromFile get_op_metadata(std::string tag) {
+OpFromFile get_op_metadata(std::string tag, bool does_check_file) {
 
     std::istringstream ss(tag);
     std::string opname,qnumbers,f2name,f3name="";
@@ -92,6 +92,11 @@ OpFromFile get_op_metadata(std::string tag) {
     std::istringstream(tmp) >> opff.r;
 
     std::cout << "Parsed tag. opname = " << opff.opname << "  " << opff.j << " " << opff.t << " " << opff.p << " " << opff.r << "   file2 = " << opff.file2name   << "    file3 = " << opff.file3name << std::endl;
+
+    if (! does_check_file) {
+        // does do the check
+        return opff;
+    }
 
     // now make sure the files exist before we add them to the list.
 
@@ -312,7 +317,7 @@ int main(int argc, char** argv)
   for (auto& tag : opsfromfile)
   {
      // if the files look good, then add it to the list
-     opsfromfile_unpacked.push_back( get_op_metadata(tag) );
+     opsfromfile_unpacked.push_back( get_op_metadata(tag, input_op_fmt != "string") );
   }
 
 
@@ -1154,7 +1159,7 @@ int main(int argc, char** argv)
     Gs.reserve(casimir.size());
 
     for (const auto &filename : casimir) {
-        auto casimir_metadata = get_op_metadata(filename);
+        auto casimir_metadata = get_op_metadata(filename, input_op_fmt != "string");
 
         // might be modelspace_imsrg? all other instances used modelspace
         // G = -casmir operator from the Johnson paper
