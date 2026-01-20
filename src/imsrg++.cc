@@ -128,6 +128,9 @@ Operator read_operator(
     int file3e3max)
 {
   std::cout << "reading " << opff.opname << " with " << opff.j << " " << opff.t << " " << opff.p << " " << opff.r << "  from file " << opff.file2name << std::endl;
+  if (input_op_fmt == "string") {
+      return imsrg_util::OperatorFromString(modelspace, opff.file2name);
+  }
   Operator op(modelspace, opff.j, opff.t, opff.p, opff.r );
   if (opff.r>2) op.ThreeBody.Allocate();
   if ( input_op_fmt == "navratil" )
@@ -160,6 +163,7 @@ Operator read_operator(
       op.TwoBody = optmp.TwoBody;
     }
   }
+  
   else {
     std::cerr << "Unknown input_op_fmt = " << input_op_fmt << std::endl;
     exit(1);
