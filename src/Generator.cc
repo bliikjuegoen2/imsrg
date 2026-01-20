@@ -22,7 +22,11 @@ std::function<double(double,double)> Generator::qtransferatan1_func = [](double 
 
 Generator::Generator()
   : generator_type("white"),/* modelspace(NULL),*/ denominator_cutoff(1e-6)  , denominator_delta(0), denominator_delta_index(-1), denominator_partitioning(Epstein_Nesbet),  only_2b_eta(false), use_isospin_averaging(false), only_1b_eta(false),
-    H(nullptr), Eta(nullptr), Gs(nullptr), emax(0), rng(std::random_device{}()), normal(0.0,1.0)
+    rng(std::random_device{}()), normal(0.0,1.0)
+  , H(nullptr), Eta(nullptr)
+  , Gs(nullptr), G(), comm_H_G(), comm_H_G_norm(0.0)
+  , emax(0)
+    
 {}
 
 
@@ -293,19 +297,47 @@ Operator Generator::get_G() {
         factor /= factors_norm + 1e-40;
     }
 
-    auto G = Gs->at(0) * factors.at(0);
+    auto new_G = Gs->at(0) * factors.at(0);
     
     for (size_t i = 1; i < Gs->size(); i++)  {
-        G += Gs->at(i) * factors.at(i);
+        new_G += Gs->at(i) * factors.at(i);
     }
 
-    return G;
+    return new_G;
 
 }
 
-void Generator::ConstructGenerator_IrrepUnmixing() {
+void Generator::update_G(Operator &H, bool does_sampling) {
 
-    auto G = get_G();
+    double H_norm = H.magnitude();
+
+    if(does_sampling) {
+        auto new_G = get_G(); 
+        double new_G_norm = new_G.magnitude();
+
+        auto new_comm_H_G = Commutator::Commutator(new_G, H);
+        new_comm_H_G /= (new_G_norm * H_norm) + 1e-100;
+        auto new_comm_H_G_norm = new_comm_H_G.magnitude();
+
+        // the commutator for the new G is large than we accept since we want to force that direction down
+        // if its small than the imsrg process is basically done
+        if(new_comm_H_G_norm > comm_H_G_norm) {
+            G = std::move(new_G);
+            comm_H_G = std::move(new_comm_H_G);
+            comm_H_G_norm = new_G_norm;
+            
+            return;
+        }
+    }
+
+    double G_norm = G.magnitude();
+
+    comm_H_G = Commutator::Commutator(G, H);
+    comm_H_G /= (G_norm * H_norm) + 1e-100;
+    comm_H_G_norm = comm_H_G.magnitude();
+}
+
+void Generator::ConstructGenerator_IrrepUnmixing() {
 
     if (emax == 0) {
         std::cerr << "[Error] : emax is unset! Must use Generator::SetEmax to use the unmixing generator!" << std::endl;
@@ -316,16 +348,8 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     double H_norm = H->magnitude();
     double G_norm = G.magnitude();
 
-    // [G, H]
-    Operator G_lie_H = Commutator::Commutator(G, *H);
-
-    // normalize commutator
-    G_lie_H /= (G_norm * H_norm) + 1e-100;
-
-    double G_lie_H_norm = G_lie_H.magnitude();
-
     // [[[G,H],H],G]
-    Operator new_Eta = Commutator::Commutator(Commutator::Commutator(G_lie_H, *H), G);
+    Operator new_Eta = Commutator::Commutator(Commutator::Commutator(comm_H_G, *H), G);
 
     // normalize Eta
     new_Eta /= (H_norm * G_norm) + 1e-100;
@@ -333,7 +357,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     double Eta_norm = new_Eta.magnitude();
 
     std::cout << std::scientific << std::setprecision(9)
-              << "Irrep Unmixing Values;\t|[G, H]|/(|G||H|) = " << G_lie_H_norm
+              << "Irrep Unmixing Values;\t|[G, H]|/(|G||H|) = " << comm_H_G_norm
               << ";\tnormalize|Eta(G, H)| = " << Eta_norm
               << ";" << std::endl;
 

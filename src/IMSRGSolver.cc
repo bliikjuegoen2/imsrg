@@ -247,6 +247,8 @@ void IMSRGSolver::UpdateEta()
   generator.Update(FlowingOps[0], Eta);
 }
 
+constexpr double sampling_delta = 10.0;
+
 // This is the default solver
 void IMSRGSolver::Solve_magnus_euler()
 {
@@ -268,9 +270,11 @@ void IMSRGSolver::Solve_magnus_euler()
   // Write details of the flow
   WriteFlowStatus(flowfile);
   WriteFlowStatus(std::cout);
+  double last_sampling = 0.0;
 
   for (istep = 1; s < smax; ++istep)
   {
+    bool does_sampling = false;
 
     double norm_eta = Eta.Norm();
     if (norm_eta < eta_criterion)
@@ -278,6 +282,9 @@ void IMSRGSolver::Solve_magnus_euler()
         eta_tries++;
         std::cout << "|eta| = " << norm_eta << " has met criterion" << '\n'
                   << "eta_tries = " << eta_tries << std::endl;
+
+        // might be time to try another direction
+        does_sampling = true;
     }
     else {
         eta_tries = 0;
@@ -285,6 +292,10 @@ void IMSRGSolver::Solve_magnus_euler()
     if (eta_tries > eta_threshhold) {
         std::cout << "number of tries has been met" << std::endl;
         break;
+    }
+    if(last_sampling + sampling_delta < s) {
+        last_sampling = s;
+        does_sampling = true;
     }
     if (norm_eta > 1e12 or std::abs(Elast) > 1e9) // This is obviously going nowhere...
     {
@@ -336,6 +347,7 @@ void IMSRGSolver::Solve_magnus_euler()
       generator.SetDenominatorCutoff(1e-6);
     }
 
+    generator.update_G(FlowingOps[0], does_sampling);
     generator.Update(FlowingOps[0], Eta);
 
     // Write details of the flow
