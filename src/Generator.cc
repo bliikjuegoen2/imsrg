@@ -312,6 +312,7 @@ void Generator::update_G(Operator &H, bool does_sampling) {
     double H_norm = H.magnitude();
 
     if(does_sampling) {
+        std::cout << "sampling new G" << std::endl;
         auto new_G = get_G(); 
         double new_G_norm = new_G.magnitude();
 
