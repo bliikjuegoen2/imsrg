@@ -320,12 +320,12 @@ void Generator::update_G(Operator &H, bool does_sampling) {
         new_comm_H_G /= (new_G_norm * H_norm) + 1e-100;
         auto new_comm_H_G_norm = new_comm_H_G.magnitude();
 
-        // the commutator for the new G is large than we accept since we want to force that direction down
+        // the commutator for the new G is large then we accept since we want to force that direction down
         // if its small than the imsrg process is basically done
         if(new_comm_H_G_norm > comm_H_G_norm) {
             G = std::move(new_G);
             comm_H_G = std::move(new_comm_H_G);
-            comm_H_G_norm = new_G_norm;
+            comm_H_G_norm = new_comm_H_G_norm;
             
             return;
         }
@@ -361,6 +361,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
               << "Irrep Unmixing Values;\t|[G, H]|/(|G||H|) = " << comm_H_G_norm
               << ";\tnormalize|Eta(G, H)| = " << Eta_norm
               << ";" << std::endl;
+
 
     *Eta = std::move(new_Eta);
 }
@@ -735,12 +736,11 @@ void Generator::ConstructGenerator_1PA(std::function<double(double,double)>& eta
 
 Operator Generator::GetHod_IrrepUnmixing(Operator &H) {
 
-    auto G = get_G();
+    std::cout << "GetHod_IrrepUnmixing" << std::endl;
 
     // I am assuming the main property we care about for Hod is that -> 0
-
-
-    Operator Hod = Commutator::Commutator(G, H);
+     
+    Operator Hod = comm_H_G;
 
     double norm = Hod.Norm();
 
