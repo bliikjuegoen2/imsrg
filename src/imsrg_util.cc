@@ -1771,7 +1771,7 @@ Operator Spin2_Op(ModelSpace& modelspace)
 {
   Operator S2(modelspace, 0, 0, 0, 2);
 
-  // --- One-body part: s(s+1) = 3/4
+  // --- One-body part: \hat s^2 = s(s+1) = 3/4
   S2.OneBody.diag().fill(0.75);
 
   const double s = 0.5;
@@ -1800,6 +1800,8 @@ Operator Spin2_Op(ModelSpace& modelspace)
         // Allowed L,S
         for (int S = 0; S <= 1; ++S)
         {
+            // S^2 = (\vec s_1 + \vec s_2) \cdot (\vec s_1 + \vec s_2) = s_1^2 + s_2^2 + 2s_1 \cdot s_2
+            // 2s_1 \cdot s_2 = S^2 - s_1^2 - s_2^2 = S(S+1) - 0.75 - 0.75 = S(S+1) - 1.5
           double eigen = S*(S+1) - 1.5;
 
           for (int L = std::abs(oa.l - ob.l);
