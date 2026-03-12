@@ -1392,7 +1392,10 @@ std::cout << "retrieved casimir metadata" << std::endl;
 
     Operator& H_s = imsrgsolver.GetH_s();
 
-    rw.write_shell_me2j(intfile+"_me2j-double.bin.gz", H_s
+    rw.write_shell_me2j(intfile+"_Hbare_me2j-double.bin.gz", Hbare
+                        , 8, imsrgsolver.modelspace->GetE2max(), imsrgsolver.modelspace->GetE2max());
+
+    rw.write_shell_me2j(intfile+"_H_me2j-double.bin.gz", H_s
                         , 8, imsrgsolver.modelspace->GetE2max(), imsrgsolver.modelspace->GetE2max());
   }
 
@@ -1660,7 +1663,7 @@ std::cout << "retrieved casimir metadata" << std::endl;
         {
            op.MakeReduced();
         }
-        rw.write_shell_me2j(intfile+opname+"_me2j-double.bin.gz", op
+        rw.write_shell_me2j(intfile+"_"+opname+"_me2j-double.bin.gz", op
                             , 8, op.modelspace->GetE2max(), op.modelspace->GetE2max());
 
         // fall back on tokyo if me2j fails
@@ -1721,7 +1724,7 @@ std::cout << "retrieved casimir metadata" << std::endl;
         }
         else if (valence_file_format == "shell-me2j")
         {
-          rw.write_shell_me2j(intfile+opname+"_me2j-double.bin.gz", op
+          rw.write_shell_me2j(intfile+"_"+opname+"_me2j-double.bin.gz", op
                               , 8, op.modelspace->GetE2max(), op.modelspace->GetE2max());
         }
         else
@@ -1743,7 +1746,7 @@ std::cout << "retrieved casimir metadata" << std::endl;
         }
         else if (valence_file_format == "shell-me2j")
         {
-          rw.write_shell_me2j(intfile+opname+"_me2j-double.bin.gz", op
+          rw.write_shell_me2j(intfile+"_"+opname+"_me2j-double.bin.gz", op
                               , 8, op.modelspace->GetE2max(), op.modelspace->GetE2max());
         }
         else
