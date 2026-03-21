@@ -1641,7 +1641,7 @@ int main(int argc, char** argv)
       if (valence_file_format == "shell-me2j")
       {
         rw.write_shell_me2j(intfile+opname+"_me2j-double.bin.gz", op
-                            , 8, op.modelspace->GetE2max(), op.modelspace->GetE2max());
+                            , 8, op.modelspace->GetEmax(), op.modelspace->GetE2max());
 
         // fall back on tokyo if me2j fails
         if(! rw.on_successful_io()) {
