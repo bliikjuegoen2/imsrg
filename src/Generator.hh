@@ -38,6 +38,7 @@ class Generator
   Operator G;
   Operator comm_H_G;
   double comm_H_G_norm;
+  double norm_factor;
   size_t emax; // need this to normalize the unmixing generator
 
 

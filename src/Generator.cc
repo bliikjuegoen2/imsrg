@@ -24,7 +24,7 @@ Generator::Generator()
   : generator_type("white"),/* modelspace(NULL),*/ denominator_cutoff(1e-6)  , denominator_delta(0), denominator_delta_index(-1), denominator_partitioning(Epstein_Nesbet),  only_2b_eta(false), use_isospin_averaging(false), only_1b_eta(false),
     rng(std::random_device{}()), normal(0.0,1.0)
   , H(nullptr), Eta(nullptr)
-  , Gs(nullptr), G(), comm_H_G(), comm_H_G_norm(0.0)
+  , Gs(nullptr), G(), comm_H_G(), comm_H_G_norm(0.0), norm_factor(0.0)
   , emax(0)
     
 {}
@@ -321,7 +321,9 @@ void Generator::update_G(Operator &H, bool does_sampling) {
         double new_G_norm = new_G.magnitude();
 
         auto new_comm_H_G = Commutator::Commutator(new_G, H);
-        new_comm_H_G /= (new_G_norm * H_norm) + 1e-100;
+        new_comm_H_G.SetAntiHermitian(); // commutator should be anti hermitian
+        norm_factor = new_G_norm * H_norm
+        new_comm_H_G /= norm_factor + 1e-100;
         auto new_comm_H_G_norm = new_comm_H_G.magnitude();
 
         // the commutator for the new G is large then we accept since we want to force that direction down
@@ -338,7 +340,9 @@ void Generator::update_G(Operator &H, bool does_sampling) {
     double G_norm = G.magnitude();
 
     comm_H_G = Commutator::Commutator(G, H);
-    comm_H_G /= (G_norm * H_norm) + 1e-100;
+    comm_H_G.SetAntiHermitian()
+    norm_factor = G_norm * H_norm
+    comm_H_G /= norm_factor + 1e-100;
     comm_H_G_norm = comm_H_G.magnitude();
 }
 
@@ -350,14 +354,12 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
         return;
     }
 
-    double H_norm = H->magnitude();
-    double G_norm = G.magnitude();
-
     // [[[G,H],H],G]
     Operator new_Eta = Commutator::Commutator(Commutator::Commutator(comm_H_G, *H), G);
+    new_Eta.SetAntiHermitian();
 
     // normalize Eta
-    new_Eta /= (H_norm * G_norm) + 1e-100;
+    new_Eta /= norm_factor + 1e-100;
 
     double Eta_norm = new_Eta.magnitude();
 
@@ -744,13 +746,7 @@ Operator Generator::GetHod_IrrepUnmixing(Operator &H) {
 
     // I am assuming the main property we care about for Hod is that -> 0
      
-    Operator Hod = comm_H_G;
-
-    double norm = Hod.Norm();
-
-    Hod /= norm + 1e-100;
-
-    return std::move(Hod);
+    return comm_H_G;
 }
 
 
