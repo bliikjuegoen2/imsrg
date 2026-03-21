@@ -20,13 +20,131 @@ std::function<double(double,double)> Generator::imaginarytime_func = [] (double 
 
 std::function<double(double,double)> Generator::qtransferatan1_func = [](double Hod, double denom){return pow(std::abs(denom)*M_NUCLEON/HBARC/HBARC, 0.5*1) * atan_func(Hod, denom);};
 
-Generator::Generator()
-  : generator_type("white"),/* modelspace(NULL),*/ denominator_cutoff(1e-6)  , denominator_delta(0), denominator_delta_index(-1), denominator_partitioning(Epstein_Nesbet),  only_2b_eta(false), use_isospin_averaging(false), only_1b_eta(false),
-    rng(std::random_device{}()), normal(0.0,1.0)
-  , H(nullptr), Eta(nullptr)
-  , Gs(nullptr), G(), comm_H_G(), comm_H_G_norm(0.0), norm_factor(0.0)
-  , emax(0)
+CasimirStore::CasimirStore(std::vector<Operator> casimir_operators)
+    : rng(std::random_device{}())
+    , normal(0.0,1.0) 
+    , Gs(std::move(casimir_operators))
+    , G()
+    , comm_H_G(), comm_H_G_norm(0.0)
+    , norm_factor(0.0)
+    , emax(0)
     
+{
+    
+}
+
+void CasimirStore::set_emax(size_t new_emax) noexcept {
+    emax = new_emax;
+}
+
+void CasimirStore::set_casimir(std::vector<Operator> new_Gs) noexcept {
+    Gs = std::move(new_Gs);
+}
+
+Operator &CasimirStore::get_G() noexcept
+{
+    return G;
+}
+
+const Operator &CasimirStore::get_G() const noexcept
+{
+    return G;
+}
+
+
+Operator CasimirStore::resample_G() {
+
+    if(Gs.size() == 0) {
+        std::cerr << "[Error] : Casimir list is empty!" << std::endl;
+        return Operator();
+    }
+
+    std::vector<double> factors;
+    factors.reserve(Gs.size());
+
+    double factors_norm_sq = 0.0;
+
+    for (size_t i = 0; i < Gs.size(); i++)  {
+        auto factor = normal(rng);
+        factors.push_back(factor);
+        factors_norm_sq += factor*factor;
+    }
+
+    auto factors_norm = std::sqrt(factors_norm_sq);
+
+    for (auto &factor : factors) {
+        factor /= factors_norm + 1e-40;
+    }
+
+    auto new_G = Gs.at(0) * factors.at(0);
+    new_G.SetHermitian();
+    
+    for (size_t i = 1; i < Gs.size(); i++)  {
+        new_G += Gs.at(i) * factors.at(i);
+    }
+
+    return new_G;
+
+}
+
+
+void CasimirStore::update_G(const Operator &H, bool does_sampling)
+{
+    double H_norm = H.magnitude();
+
+    if(does_sampling) {
+        std::cout << "sampling new G" << std::endl;
+        auto new_G = resample_G(); 
+        double new_G_norm = new_G.magnitude();
+
+        auto new_comm_H_G = Commutator::Commutator(new_G, H);
+        new_comm_H_G.SetAntiHermitian(); // commutator should be anti hermitian
+        norm_factor = new_G_norm * H_norm;
+        new_comm_H_G /= norm_factor + 1e-100;
+        auto new_comm_H_G_norm = new_comm_H_G.magnitude();
+
+        // the commutator for the new G is large then we accept since we want to force that direction down
+        // if its small than the imsrg process is basically done
+        if(new_comm_H_G_norm > comm_H_G_norm) {
+            G = std::move(new_G);
+            comm_H_G = std::move(new_comm_H_G);
+            comm_H_G_norm = new_comm_H_G_norm;
+            
+            return;
+        }
+    }
+
+    double G_norm = G.magnitude();
+
+    comm_H_G = Commutator::Commutator(G, H);
+    comm_H_G.SetAntiHermitian();
+    norm_factor = G_norm * H_norm;
+    comm_H_G /= norm_factor + 1e-100;
+    comm_H_G_norm = comm_H_G.magnitude();
+}
+
+Operator &CasimirStore::get_casimir_lie_bracket() noexcept
+{
+    return comm_H_G;
+}
+
+const Operator &CasimirStore::get_casimir_lie_bracket() const noexcept
+{
+    return comm_H_G;
+}
+
+double CasimirStore::get_norm_factor() const noexcept {
+    return norm_factor;
+}
+
+double CasimirStore::get_casimir_lie_bracket_norm() const noexcept {
+    return comm_H_G_norm;
+}
+
+
+Generator::Generator()
+  : generator_type("white"),/* modelspace(NULL),*/ denominator_cutoff(1e-6)  , denominator_delta(0), denominator_delta_index(-1), denominator_partitioning(Epstein_Nesbet),  only_2b_eta(false), use_isospin_averaging(false), only_1b_eta(false)
+  , H(nullptr), Eta(nullptr), casimir_store(nullptr)
 {}
 
 
@@ -265,106 +383,41 @@ double Generator::Get2bDenominator_Jdep(int ch, int ibra, int iket)
    return denominator;
 }
 
-void Generator::SetEMax(size_t EMax) {
-    emax = EMax;
+void Generator::set_casimir_store(CasimirStore &new_casimir_store) noexcept {
+    casimir_store = &new_casimir_store;
 }
 
-void Generator::SetCasimir(const std::vector<Operator> &new_G) {
-   Gs = &new_G;
-}
-
-Operator Generator::get_G() {
-
-    if(Gs == nullptr || Gs->size() == 0) {
-        std::cerr << "[Error] : Casimir Operator is set to null! Set Casimir Operator for Irrep Unmixing!" << std::endl;
-        return Operator();
-    }
-
-    std::vector<double> factors;
-    factors.reserve(Gs->size());
-
-    double factors_norm_sq = 0.0;
-
-    for (size_t i = 0; i < Gs->size(); i++)  {
-        auto factor = normal(rng);
-        factors.push_back(factor);
-        factors_norm_sq += factor*factor;
-    }
-
-    auto factors_norm = std::sqrt(factors_norm_sq);
-
-    for (auto &factor : factors) {
-        factor /= factors_norm + 1e-40;
-    }
-
-    auto new_G = Gs->at(0) * factors.at(0);
-    
-    for (size_t i = 1; i < Gs->size(); i++)  {
-        new_G += Gs->at(i) * factors.at(i);
-    }
-
-    return new_G;
-
-}
-
-void Generator::update_G(Operator &H, bool does_sampling) {
-
-    if (generator_type != "irrep-unmixing") {
+void Generator::update_G(const Operator &H, bool does_sampling)
+{
+    if(casimir_store == nullptr) {
         return;
     }
 
-    double H_norm = H.magnitude();
-
-    if(does_sampling) {
-        std::cout << "sampling new G" << std::endl;
-        auto new_G = get_G(); 
-        double new_G_norm = new_G.magnitude();
-
-        auto new_comm_H_G = Commutator::Commutator(new_G, H);
-        new_comm_H_G.SetAntiHermitian(); // commutator should be anti hermitian
-        norm_factor = new_G_norm * H_norm;
-        new_comm_H_G /= norm_factor + 1e-100;
-        auto new_comm_H_G_norm = new_comm_H_G.magnitude();
-
-        // the commutator for the new G is large then we accept since we want to force that direction down
-        // if its small than the imsrg process is basically done
-        if(new_comm_H_G_norm > comm_H_G_norm) {
-            G = std::move(new_G);
-            comm_H_G = std::move(new_comm_H_G);
-            comm_H_G_norm = new_comm_H_G_norm;
-            
-            return;
-        }
-    }
-
-    double G_norm = G.magnitude();
-
-    comm_H_G = Commutator::Commutator(G, H);
-    comm_H_G.SetAntiHermitian();
-    norm_factor = G_norm * H_norm;
-    comm_H_G /= norm_factor + 1e-100;
-    comm_H_G_norm = comm_H_G.magnitude();
+    casimir_store->update_G(H, does_sampling);
 }
 
 void Generator::ConstructGenerator_IrrepUnmixing() {
 
-    if (emax == 0) {
-        std::cerr << "[Error] : emax is unset! Must use Generator::SetEmax to use the unmixing generator!" << std::endl;
-        *Eta = 0*(*H);
+    if(casimir_store == nullptr) {
+        std::cerr << "[Generator::ConstructGenerator_IrrepUnmixing], must set casimir operators" << std::endl;
         return;
     }
+
+    const Operator &G = casimir_store->get_G();
+    const Operator &comm_H_G = casimir_store->get_casimir_lie_bracket();
+    
 
     // [[[G,H],H],G]
     Operator new_Eta = Commutator::Commutator(Commutator::Commutator(comm_H_G, *H), G);
     new_Eta.SetAntiHermitian();
 
     // normalize Eta
-    new_Eta /= norm_factor + 1e-100;
+    new_Eta /= casimir_store->get_norm_factor() + 1e-100;
 
     double Eta_norm = new_Eta.magnitude();
 
     std::cout << std::scientific << std::setprecision(9)
-              << "Irrep Unmixing Values;\t|[G, H]|/(|G||H|) = " << comm_H_G_norm
+              << "Irrep Unmixing Values;\t|[G, H]|/(|G||H|) = " << casimir_store->get_casimir_lie_bracket_norm()
               << ";\tnormalize|Eta(G, H)| = " << Eta_norm
               << ";" << std::endl;
 
@@ -744,9 +797,14 @@ Operator Generator::GetHod_IrrepUnmixing(Operator &H) {
 
     std::cout << "GetHod_IrrepUnmixing" << std::endl;
 
+    if(casimir_store == nullptr) {
+        std::cerr << "[Generator::ConstructGenerator_IrrepUnmixing], must set casimir operators" << std::endl;
+        return Operator();
+    }
+
     // I am assuming the main property we care about for Hod is that -> 0
      
-    return comm_H_G;
+    return casimir_store->get_casimir_lie_bracket();
 }
 
 

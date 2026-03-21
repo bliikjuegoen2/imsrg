@@ -26,20 +26,45 @@
 #include <string>
 #include <random>
 
+class CasimirStore
+{
+    protected:
+        std::mt19937 rng;
+        std::normal_distribution<double> normal;
+        std::vector<Operator> Gs;
+        Operator G;
+        Operator comm_H_G;
+        double comm_H_G_norm;
+        double norm_factor;
+        size_t emax; // need this to normalize the unmixing generator
+
+        
+    public:
+        CasimirStore(std::vector<Operator> casimir_operators);
+        // it is not trivial copiable
+        // should not be copied
+        CasimirStore(const CasimirStore &) = delete;
+        CasimirStore &operator=(const CasimirStore &) = delete;
+
+        void set_emax(size_t new_emax) noexcept;
+        void set_casimir(std::vector<Operator> new_Gs) noexcept;
+        Operator &get_G() noexcept;
+        const Operator &get_G() const noexcept;
+        Operator resample_G();
+        void update_G(const Operator &H, bool does_sampling);
+        Operator &get_casimir_lie_bracket() noexcept;
+        const Operator &get_casimir_lie_bracket() const noexcept;
+        double get_norm_factor() const noexcept;
+        double get_casimir_lie_bracket_norm() const noexcept;
+};
+
 
 class Generator
 {
  protected: //DK: Was private. Changed to inherit into GeneratorPV 
-  std::mt19937 rng;
-  std::normal_distribution<double> normal;
   Operator * H;
   Operator * Eta;
-  const std::vector<Operator> * Gs;
-  Operator G;
-  Operator comm_H_G;
-  double comm_H_G_norm;
-  double norm_factor;
-  size_t emax; // need this to normalize the unmixing generator
+  CasimirStore *casimir_store;
 
 
  public:
@@ -82,10 +107,8 @@ class Generator
 
 
 
-  void SetCasimir(const std::vector<Operator>& new_G);
-  Operator get_G();
-  void update_G(Operator &H, bool does_sampling);
-  void SetEMax(size_t EMax);
+  void set_casimir_store(CasimirStore &new_casimir_store) noexcept;
+  void update_G(const Operator &H, bool does_sampling);
   void ConstructGenerator_IrrepUnmixing();
   void ConstructGenerator_SingleRef(std::function<double (double,double)>& etafunc );
   void ConstructGenerator_SingleRef_3body(std::function<double (double,double)>& etafunc );

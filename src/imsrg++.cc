@@ -1164,6 +1164,8 @@ int main(int argc, char** argv)
    }
   }
 
+  CasimirStore casimir_store({});
+
   if(!casimir.empty()) {
 
     std::cout << "reading casimir" << std::endl;
@@ -1186,13 +1188,10 @@ int main(int argc, char** argv)
 
     }
 
-std::cout << "retrieved casimir metadata" << std::endl;
+    std::cout << "retrieved casimir metadata" << std::endl;
 
-
-
-    imsrgsolver.SetCasimir(std::move(Gs));
-    imsrgsolver.GetGenerator().SetEMax(modelspace.GetEmax()); // the unmixing generator needs to know the emax
-
+    casimir_store.set_casimir(std::move(Gs));
+    imsrgsolver.set_casimir_store(casimir_store);
 
   }
 

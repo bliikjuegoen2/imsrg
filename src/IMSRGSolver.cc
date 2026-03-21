@@ -156,11 +156,9 @@ void IMSRGSolver::Reset()
   NewOmega();
 }
 
-void IMSRGSolver::SetCasimir(std::vector<Operator> new_Gs) {
+void IMSRGSolver::set_casimir_store(CasimirStore &new_casimir_store) noexcept {
 
-  Gs = std::move(new_Gs);
-
-  generator.SetCasimir(Gs);
+  generator.set_casimir_store(new_casimir_store);
 
 }
 
