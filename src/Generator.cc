@@ -309,6 +309,10 @@ Operator Generator::get_G() {
 
 void Generator::update_G(Operator &H, bool does_sampling) {
 
+    if (generator_type != "irrep-unmixing") {
+        return;
+    }
+
     double H_norm = H.magnitude();
 
     if(does_sampling) {
