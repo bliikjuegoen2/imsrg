@@ -322,7 +322,7 @@ void Generator::update_G(Operator &H, bool does_sampling) {
 
         auto new_comm_H_G = Commutator::Commutator(new_G, H);
         new_comm_H_G.SetAntiHermitian(); // commutator should be anti hermitian
-        norm_factor = new_G_norm * H_norm
+        norm_factor = new_G_norm * H_norm;
         new_comm_H_G /= norm_factor + 1e-100;
         auto new_comm_H_G_norm = new_comm_H_G.magnitude();
 
@@ -340,8 +340,8 @@ void Generator::update_G(Operator &H, bool does_sampling) {
     double G_norm = G.magnitude();
 
     comm_H_G = Commutator::Commutator(G, H);
-    comm_H_G.SetAntiHermitian()
-    norm_factor = G_norm * H_norm
+    comm_H_G.SetAntiHermitian();
+    norm_factor = G_norm * H_norm;
     comm_H_G /= norm_factor + 1e-100;
     comm_H_G_norm = comm_H_G.magnitude();
 }

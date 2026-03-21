@@ -63,6 +63,12 @@ class TwoBodyME
   int parity;
 
   ~TwoBodyME();
+  // copies
+  TwoBodyME(const TwoBodyME &) = default;
+  TwoBodyME &operator=(const TwoBodyME &) = default;
+  // moves
+  TwoBodyME(TwoBodyME &&other) noexcept;
+  TwoBodyME &operator=(TwoBodyME &&other) noexcept;
   TwoBodyME();
   TwoBodyME(ModelSpace*);
   TwoBodyME(TwoBodyME_ph&); // Transform a ph operator to pp.

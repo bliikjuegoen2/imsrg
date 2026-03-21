@@ -18,6 +18,40 @@ TwoBodyME::TwoBodyME()
 //  cout << "Default TwoBodyME constructor" << endl;
 }
 
+TwoBodyME::TwoBodyME(TwoBodyME &&other) noexcept
+    : modelspace(other.modelspace)
+    , MatEl(std::move(other.MatEl))
+    , nChannels(other.nChannels)
+    , hermitian(other.hermitian)
+    , antihermitian(other.antihermitian)
+    , allocated(other.allocated)
+    , rank_J(other.rank_J)
+    , rank_T(other.rank_T)
+    , parity(other.parity)
+{
+    // signifies that other is a null object and should be used
+    other.modelspace = nullptr;
+    other.allocated = false;
+}
+
+TwoBodyME &TwoBodyME::operator=(TwoBodyME &&other) noexcept {
+    modelspace = other.modelspace;
+    MatEl = std::move(other.MatEl);
+    nChannels = other.nChannels;
+    hermitian = other.hermitian;
+    antihermitian = other.antihermitian;
+    allocated = other.allocated;
+    rank_J = other.rank_J;
+    rank_T = other.rank_T;
+    parity = other.parity;
+
+    // signifies that other is a null object and should be used
+    other.modelspace = nullptr;
+    other.allocated = false;
+
+    return *this;
+}
+
 
 TwoBodyME::TwoBodyME(ModelSpace* ms)
 : modelspace(ms), nChannels(ms->GetNumberTwoBodyChannels()),
