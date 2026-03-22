@@ -1183,49 +1183,6 @@ int main(int argc, char** argv)
 
   }
 
-  //write bare hamiltonian
-  if (core_generator == "irrep-unmixing" || valence_generator == "irrep-unmixing") {
-    // only support me2j as of now
-
-    if(valence_file_format != "shell-me2j") {
-      std::cerr << "unsupported output format:\t" << valence_file_format << std::endl;
-      exit(0);
-    }
-    [&HNO, &imsrgsolver, &casimir](){
-
-        std::vector<Operator> *casimir_ops = imsrgsolver.GetGenerator().get_casimir(); 
-
-        if(casimir_ops == nullptr) {
-            std::cerr << "casimirs is empty" << std::endl;
-            return;
-        }
-
-        double HNO_Norm = HNO.Norm();
-        
-        for (size_t i = 0; i < casimir_ops->size(); i++) {
-            const Operator &G = casimir_ops->at(i);
-
-            double G_Norm = G.Norm();
-            double norm_factor = HNO_Norm * G_Norm;
-
-            Operator comm_G_H = Commutator::Commutator(G, HNO);
-            comm_G_H /= norm_factor + 1e-10;
-            double comm_G_H_Norm = comm_G_H.Norm();
-
-            std::cout << std::scientific << std::setprecision(9)
-                      << "|[ `" << casimir.at(i) << "`, H] = " << comm_G_H_Norm << std::endl;           
-        }
-    }();
-
-    rw.write_shell_me2j(intfile+"_Hbare_me2j-double.bin.gz", HNO
-                        , 8, HNO.GetModelSpace()->GetEmax(), HNO.GetModelSpace()->GetE2max());
-
-    if (! rw.on_successful_io()) {
-        std::cout << "me2j: failed to write" << std::endl;
-    }
-  }
-
-
   imsrgsolver.Solve();
 
   if (IMSRG3)
@@ -1433,9 +1390,10 @@ int main(int argc, char** argv)
       exit(0);
     }
 
-    Operator& H_s = imsrgsolver.GetH_s();
+    const Operator& H = imsrgsolver.GetH_s();
+    const Operator& HBare = imsrgsolver.GetHin();
 
-    [&H_s, &imsrgsolver, &casimir](){
+    [H, HBare, &imsrgsolver, &casimir](){
 
         std::vector<Operator> *casimir_ops = imsrgsolver.GetGenerator().get_casimir(); 
 
@@ -1444,29 +1402,49 @@ int main(int argc, char** argv)
             return;
         }
 
-        double H_s_Norm = H_s.Norm();
+        double HNorm = H.Norm();
+        double HBareNorm = HBare.Norm();
         
         for (size_t i = 0; i < casimir_ops->size(); i++) {
             const Operator &G = casimir_ops->at(i);
 
-            double G_Norm = G.Norm();
-            double norm_factor = H_s_Norm * G_Norm;
+            double GNorm = G.Norm();
+            double norm_factor = HNorm * GNorm;
+            double norm_factor_bare = HBareNorm * GNorm;
 
-            Operator comm_G_H = Commutator::Commutator(G, H_s);
-            comm_G_H /= norm_factor + 1e-10;
-            double comm_G_H_Norm = comm_G_H.Norm();
+            {
+                Operator comm_G_H = Commutator::Commutator(G, H);
+                comm_G_H /= norm_factor + 1e-10;
+                double comm_G_H_Norm = comm_G_H.Norm();
 
-            std::cout << std::scientific << std::setprecision(9)
-                      << "|[ `" << casimir.at(i) << "`, H] = " << comm_G_H_Norm << std::endl;           
+                std::cout << std::scientific << std::setprecision(9)
+                        << "|[ `" << casimir.at(i) << "`, H] = " << comm_G_H_Norm << std::endl;           
+            }
+
+            {
+                Operator comm_G_HBare = Commutator::Commutator(G, HBare);
+                comm_G_HBare /= norm_factor + 1e-10;
+                double comm_G_HBare_Norm = comm_G_HBare.Norm();
+
+                std::cout << std::scientific << std::setprecision(9)
+                        << "|[ `" << casimir.at(i) << "`, HBare] = " << comm_G_HBare_Norm << std::endl;           
+            }
         }
     }();
 
 
-    rw.write_shell_me2j(intfile+"_H_me2j-double.bin.gz", H_s
-                        , 8, H_s.GetModelSpace()->GetEmax(), H_s.GetModelSpace()->GetE2max());
+    rw.write_shell_me2j(intfile+"_H_me2j-double.bin.gz", H
+                        , 8, H.GetModelSpace()->GetEmax(), H.GetModelSpace()->GetE2max());
 
     if (! rw.on_successful_io()) {
-        std::cout << "me2j: failed to write" << std::endl;
+        std::cout << "me2j: failed to write Hamiltonian" << std::endl;
+    }
+
+    rw.write_shell_me2j(intfile+"_HBare_me2j-double.bin.gz", HBare
+                        , 8, HBare.GetModelSpace()->GetEmax(), HBare.GetModelSpace()->GetE2max());
+
+    if (! rw.on_successful_io()) {
+        std::cout << "me2j: failed to write Hamiltonian" << std::endl;
     }
   }
 

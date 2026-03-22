@@ -121,7 +121,11 @@ void IMSRGSolver::GatherOmega()
   }
 }
 
-void IMSRGSolver::SetHin(Operator &H_in)
+const Operator &IMSRGSolver::GetHin() const {
+    return *H_0;
+}
+
+void IMSRGSolver::SetHin(const Operator &H_in)
 {
   modelspace = H_in.GetModelSpace();
   H_0 = &H_in;

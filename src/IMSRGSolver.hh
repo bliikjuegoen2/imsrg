@@ -91,7 +91,8 @@ class IMSRGSolver
   IMSRGSolver( Operator& H_in);
   void NewOmega();
   void GatherOmega(); // hunter-gatherer mode of updating omega
-  void SetHin( Operator& H_in);
+  const Operator &GetHin() const;
+  void SetHin( const Operator& H_in);
 //  void SetReadWrite( ReadWrite& r){rw = &r; scratchdir = rw->GetScratchDir();};
   void SetScratchDir( std::string sdir) { scratchdir = sdir; };
   std::string GetScratchDir( ) {return scratchdir; };

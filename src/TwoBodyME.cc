@@ -661,7 +661,7 @@ void TwoBodyME::Set_pn_TBME_from_iso(int j, int T, int tz, int a, int b, int c, 
 
 }
 
-double TwoBodyME::Get_iso_TBME_from_pn(int j, int T, int tz, int a, int b, int c, int d)
+double TwoBodyME::Get_iso_TBME_from_pn(int j, int T, int tz, int a, int b, int c, int d) const
 {
    // convert everyting to proton labels. Incrementing by 1 gets the neutron label
    a -= a%2;

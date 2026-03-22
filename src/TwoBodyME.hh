@@ -158,7 +158,7 @@ class TwoBodyME
 
 
   void Set_pn_TBME_from_iso(int j, int T, int tz, int a, int b, int c, int d, double tbme);
-  double Get_iso_TBME_from_pn(int j, int T, int tz, int a, int b, int c, int d);
+  double Get_iso_TBME_from_pn(int j, int T, int tz, int a, int b, int c, int d) const;
 
   double GetTBMEmonopole(int a, int b, int c, int d) const;
   double GetTBMEmonopole_norm(int a, int b, int c, int d) const;

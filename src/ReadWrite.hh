@@ -133,7 +133,7 @@ class ReadWrite
 
 
    void write_shell_me2j(std::string filename
-                             , Operator &op
+                             , const Operator &op
                              , int float_size
                              ,  int n1max, int n2max);
 
