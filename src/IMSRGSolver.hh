@@ -31,6 +31,11 @@
 
 //using namespace std;
 
+// class IMSRGStore {
+// protected:
+// public:
+//     friend class IMSRGSolver;
+// }
 
 class IMSRGSolver
 {
@@ -40,7 +45,7 @@ class IMSRGSolver
 //  private:
   ModelSpace* modelspace;
 //  ReadWrite* rw;
-  Operator* H_0; 
+  const Operator* H_0; 
   std::deque<Operator> FlowingOps;
   Operator H_saved;
   Operator Eta;
@@ -103,7 +108,7 @@ class IMSRGSolver
   void Solve_magnus_modified_euler();
   void Solve_flow_RK4();
 
-  Operator Transform(Operator& OpIn);
+  Operator Transform(const Operator& OpIn);
   Operator Transform(Operator&& OpIn);
   Operator InverseTransform(Operator& OpIn);
   Operator GetOmega(int i){return Omega[i];};
@@ -111,7 +116,7 @@ class IMSRGSolver
   void SetOmega(size_t i, Operator& om);
   size_t GetOmegaSize(){return Omega.size();};
   int GetNOmegaWritten(){return n_omega_written;};
-  Operator Transform_Partial(Operator& OpIn, int n);
+  Operator Transform_Partial(const Operator& OpIn, int n);
   Operator Transform_Partial(Operator&& OpIn, int n);
 
   void SetFlowFile(std::string s);

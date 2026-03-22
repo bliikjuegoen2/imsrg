@@ -1082,18 +1082,6 @@ int main(int argc, char** argv)
   }
 
 
-  //write bare hamiltonian
-  if (core_generator == "irrep-unmixing" || valence_generator == "irrep-unmixing") {
-    // only support me2j as of now
-
-    if(valence_file_format != "shell-me2j") {
-      std::cerr << "unsupported output format:\t" << valence_file_format << std::endl;
-      exit(0);
-    }
-
-    rw.write_shell_me2j(intfile+"_Hbare_me2j-double.bin.gz", HNO
-                        , 8, HNO.GetModelSpace()->GetEmax(), HNO.GetModelSpace()->GetE2max());
-  }
 
 
 //// Now we're ready do to the IMSRG calculation.
@@ -1193,6 +1181,48 @@ int main(int argc, char** argv)
     casimir_store.set_casimir(std::move(Gs));
     imsrgsolver.set_casimir_store(casimir_store);
 
+  }
+
+  //write bare hamiltonian
+  if (core_generator == "irrep-unmixing" || valence_generator == "irrep-unmixing") {
+    // only support me2j as of now
+
+    if(valence_file_format != "shell-me2j") {
+      std::cerr << "unsupported output format:\t" << valence_file_format << std::endl;
+      exit(0);
+    }
+    [&HNO, &imsrgsolver, &casimir](){
+
+        std::vector<Operator> *casimir_ops = imsrgsolver.GetGenerator().get_casimir(); 
+
+        if(casimir_ops == nullptr) {
+            std::cerr << "casimirs is empty" << std::endl;
+            return;
+        }
+
+        double HNO_Norm = HNO.Norm();
+        
+        for (size_t i = 0; i < casimir_ops->size(); i++) {
+            const Operator &G = casimir_ops->at(i);
+
+            double G_Norm = G.Norm();
+            double norm_factor = HNO_Norm * G_Norm;
+
+            Operator comm_G_H = Commutator::Commutator(G, HNO);
+            comm_G_H /= norm_factor + 1e-10;
+            double comm_G_H_Norm = comm_G_H.Norm();
+
+            std::cout << std::scientific << std::setprecision(9)
+                      << "|[ `" << casimir.at(i) << "`, H] = " << comm_G_H_Norm << std::endl;           
+        }
+    }();
+
+    rw.write_shell_me2j(intfile+"_Hbare_me2j-double.bin.gz", HNO
+                        , 8, HNO.GetModelSpace()->GetEmax(), HNO.GetModelSpace()->GetE2max());
+
+    if (! rw.on_successful_io()) {
+        std::cout << "me2j: failed to write" << std::endl;
+    }
   }
 
 
@@ -1414,17 +1444,17 @@ int main(int argc, char** argv)
             return;
         }
 
-        double H_s_Norm = H_s.magnitude();
+        double H_s_Norm = H_s.Norm();
         
         for (size_t i = 0; i < casimir_ops->size(); i++) {
             const Operator &G = casimir_ops->at(i);
 
-            double G_Norm = G.magnitude();
+            double G_Norm = G.Norm();
             double norm_factor = H_s_Norm * G_Norm;
 
             Operator comm_G_H = Commutator::Commutator(G, H_s);
             comm_G_H /= norm_factor + 1e-10;
-            double comm_G_H_Norm = comm_G_H.magnitude();
+            double comm_G_H_Norm = comm_G_H.Norm();
 
             std::cout << std::scientific << std::setprecision(9)
                       << "|[ `" << casimir.at(i) << "`, H] = " << comm_G_H_Norm << std::endl;           
@@ -1434,6 +1464,10 @@ int main(int argc, char** argv)
 
     rw.write_shell_me2j(intfile+"_H_me2j-double.bin.gz", H_s
                         , 8, H_s.GetModelSpace()->GetEmax(), H_s.GetModelSpace()->GetE2max());
+
+    if (! rw.on_successful_io()) {
+        std::cout << "me2j: failed to write" << std::endl;
+    }
   }
 
   // Write the output

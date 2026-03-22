@@ -927,10 +927,10 @@ void TwoBodyME::PrintAllMatrices() const
 
 
 
-int TwoBodyME::Dimension()
+int TwoBodyME::Dimension() const
 {
    int dim = 0;
-   for ( auto& itmat : MatEl )
+   for ( const auto& itmat : MatEl )
    {
       int N = itmat.second.n_cols;
       dim += N*(N+1)/2;

@@ -177,7 +177,7 @@ class TwoBodyME
   void PrintAllMatrices() const;
   void PrintMatrix(size_t chbra,size_t chket) const;
 //  void PrintMatrix(size_t chbra,size_t chket) const {std::cout.precision(12); MatEl.at({chbra,chket}).raw_print();};
-  int Dimension();
+  int Dimension() const;
   int size();
   int dim() const;
   double trace() const;

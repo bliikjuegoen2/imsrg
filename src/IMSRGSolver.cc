@@ -956,7 +956,7 @@ void IMSRGSolver::Solve_ode_magnus()
 #endif
 
 /// Returns \f$ e^{Omega} \mathcal{O} e^{-Omega} \f$
-Operator IMSRGSolver::Transform(Operator &OpIn)
+Operator IMSRGSolver::Transform(const Operator &OpIn)
 {
   return Transform_Partial(OpIn, 0);
 }
@@ -985,7 +985,7 @@ Operator IMSRGSolver::InverseTransform(Operator &OpIn)
 
 /// Returns \f$ e^{\Omega} \mathcal{O} e^{-\Omega} \f$
 /// for the \f$\Omega_i\f$s with index greater than or equal to n.
-Operator IMSRGSolver::Transform_Partial(Operator &OpIn, int n)
+Operator IMSRGSolver::Transform_Partial(const Operator &OpIn, int n)
 {
   Operator OpOut = OpIn;
   if (OpOut.GetParticleRank() == 1)
