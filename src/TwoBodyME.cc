@@ -845,9 +845,8 @@ double TwoBodyME::magnitude() const {
     double tr2 = tr*tr;
 
     // the epsilon is needed because this sum might go negative due to numerical noise
-    double mag2 = norm2/N
-        // - tr2/(N*N) + epsilon
-        ;
+    double mag2 = norm2/N - tr2/(N*N);
+    std::cout << "mag2: " << mag2 << ", nmag2: " << norm2/N << std::endl;
     double mag = sqrt(mag2);
 
 
