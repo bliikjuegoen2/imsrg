@@ -29,7 +29,7 @@ IMSRGSolver::IMSRGSolver()
 }
 
 // Constructor
-IMSRGSolver::IMSRGSolver(Operator &H_in)
+IMSRGSolver::IMSRGSolver(const Operator &H_in)
     : modelspace(H_in.GetModelSpace()), H_0(&H_in), FlowingOps(1, H_in), Eta(H_in),
       istep(0), s(0), ds(0.1), ds_max(0.5),
       smax(2.0), norm_domega(0.1), omega_norm_max(2.0), eta_criterion(1e-6), method("magnus_euler"),

@@ -82,7 +82,7 @@ class IMSRGSolver
 
   ~IMSRGSolver();
   IMSRGSolver();
-  IMSRGSolver( Operator& H_in);
+  IMSRGSolver(const Operator& H_in);
   // disable copying
   IMSRGSolver( const IMSRGSolver & ) = delete;
   IMSRGSolver &operator=( const IMSRGSolver & ) = delete;
