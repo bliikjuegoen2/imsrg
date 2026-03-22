@@ -1405,6 +1405,33 @@ int main(int argc, char** argv)
 
     Operator& H_s = imsrgsolver.GetH_s();
 
+    [&H_s, &imsrgsolver, &casimir](){
+
+        std::vector<Operator> *casimir_ops = imsrgsolver.GetGenerator().get_casimir(); 
+
+        if(casimir_ops == nullptr) {
+            std::cerr << "casimirs is empty" << std::endl;
+            return;
+        }
+
+        double H_s_Norm = H_s.magnitude();
+        
+        for (size_t i = 0; i < casimir_ops->size(); i++) {
+            const Operator &G = casimir_ops->at(i);
+
+            double G_Norm = G.magnitude();
+            double norm_factor = H_s_Norm * G_Norm;
+
+            Operator comm_G_H = Commutator::Commutator(G, H_s);
+            comm_G_H /= norm_factor + 1e-10;
+            double comm_G_H_Norm = comm_G_H.magnitude();
+
+            std::cout << std::scientific << std::setprecision(9)
+                      << "|[ `" << casimir.at(i) << "`, H] = " << comm_G_H_Norm << std::endl;           
+        }
+    }();
+
+
     rw.write_shell_me2j(intfile+"_H_me2j-double.bin.gz", H_s
                         , 8, H_s.GetModelSpace()->GetEmax(), H_s.GetModelSpace()->GetE2max());
   }

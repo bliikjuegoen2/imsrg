@@ -47,6 +47,7 @@ class CasimirStore
         CasimirStore &operator=(const CasimirStore &) = delete;
 
         void set_emax(size_t new_emax) noexcept;
+        std::vector<Operator> &get_casimir() noexcept;
         void set_casimir(std::vector<Operator> new_Gs) noexcept;
         Operator &get_G() noexcept;
         const Operator &get_G() const noexcept;
@@ -107,6 +108,7 @@ class Generator
 
 
 
+  std::vector<Operator> *get_casimir() noexcept;
   void set_casimir_store(CasimirStore &new_casimir_store) noexcept;
   void update_G(const Operator &H, bool does_sampling);
   void ConstructGenerator_IrrepUnmixing();

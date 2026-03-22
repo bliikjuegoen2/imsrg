@@ -41,6 +41,10 @@ void CasimirStore::set_casimir(std::vector<Operator> new_Gs) noexcept {
     Gs = std::move(new_Gs);
 }
 
+std::vector<Operator> &CasimirStore::get_casimir() noexcept {
+    return Gs;
+}
+
 Operator &CasimirStore::get_G() noexcept
 {
     return G;
@@ -381,6 +385,14 @@ double Generator::Get2bDenominator_Jdep(int ch, int ibra, int iket)
    if (std::abs(denominator)<denominator_cutoff)
      denominator = denominator_cutoff;
    return denominator;
+}
+
+std::vector<Operator> *Generator::get_casimir() noexcept {
+    if(casimir_store == nullptr) {
+        return nullptr;
+    }
+
+    return &(casimir_store->get_casimir());
 }
 
 void Generator::set_casimir_store(CasimirStore &new_casimir_store) noexcept {
