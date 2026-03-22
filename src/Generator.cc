@@ -87,6 +87,8 @@ Operator CasimirStore::resample_G() {
         new_G += Gs.at(i) * factors.at(i);
     }
 
+    new_G.SetHermitian();
+
     return new_G;
 
 }
