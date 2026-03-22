@@ -1418,7 +1418,7 @@ int main(int argc, char** argv)
                 double comm_G_H_Norm = comm_G_H.Norm();
 
                 std::cout << std::scientific << std::setprecision(9)
-                        << "|[ `" << casimir.at(i) << "`, H] = " << comm_G_H_Norm << std::endl;           
+                        << "|[ `" << casimir.at(i) << "`, H]| =\t" << comm_G_H_Norm << std::endl;           
             }
 
             {
@@ -1427,7 +1427,7 @@ int main(int argc, char** argv)
                 double comm_G_HBare_Norm = comm_G_HBare.Norm();
 
                 std::cout << std::scientific << std::setprecision(9)
-                        << "|[ `" << casimir.at(i) << "`, HBare] = " << comm_G_HBare_Norm << std::endl;           
+                        << "|[ `" << casimir.at(i) << "`, HBare]| =\t" << comm_G_HBare_Norm << std::endl;           
             }
         }
     }();
