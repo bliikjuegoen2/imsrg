@@ -93,6 +93,9 @@ class Generator
 
 
   Generator();
+  // // shouldn't be copieable
+  // Generator(const Generator &) = delete; 
+  // Generator &operator=(const Generator &) = delete;
   void SetType(std::string g){generator_type = g;};
   void SetDenominatorPartitioning(std::string dp); 
   std::string GetType(){return generator_type;};

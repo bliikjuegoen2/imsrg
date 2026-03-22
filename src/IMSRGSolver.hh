@@ -31,12 +31,6 @@
 
 //using namespace std;
 
-// class IMSRGStore {
-// protected:
-// public:
-//     friend class IMSRGSolver;
-// }
-
 class IMSRGSolver
 {
 
@@ -89,6 +83,10 @@ class IMSRGSolver
   ~IMSRGSolver();
   IMSRGSolver();
   IMSRGSolver( Operator& H_in);
+  // disable copying
+  IMSRGSolver( const IMSRGSolver & ) = delete;
+  IMSRGSolver &operator=( const IMSRGSolver & ) = delete;
+            
   void NewOmega();
   void GatherOmega(); // hunter-gatherer mode of updating omega
   const Operator &GetHin() const;
