@@ -1410,12 +1410,16 @@ int main(int argc, char** argv)
         for (size_t i = 0; i < casimir_ops->size(); i++) {
             const Operator &G = casimir_ops->at(i);
 
+            double GNorm = G.Norm();
+            double norm_factor = HNorm * GNorm;
+            double norm_factor_bare = HBareNorm * GNorm;
+
             auto flags = std::cout.flags();
             auto precision = std::cout.precision();
 
             {
                 Operator comm_G_H = Commutator::Commutator(G, H);
-                comm_G_H /= HNorm + 1e-10;
+                comm_G_H /= norm_factor + 1e-10;
                 double comm_G_H_Norm = comm_G_H.Norm();
 
                 std::cout << std::scientific << std::setprecision(9)
@@ -1424,7 +1428,7 @@ int main(int argc, char** argv)
 
             {
                 Operator comm_G_HBare = Commutator::Commutator(G, HBare);
-                comm_G_HBare /= HBareNorm + 1e-10;
+                comm_G_HBare /= norm_factor_bare + 1e-10;
                 double comm_G_HBare_Norm = comm_G_HBare.Norm();
 
                 std::cout << std::scientific << std::setprecision(9)

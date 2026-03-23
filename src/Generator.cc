@@ -29,6 +29,7 @@ CasimirStore::CasimirStore(std::vector<Operator> casimir_operators)
     , Gs(std::move(casimir_operators))
     , G()
     , comm_H_G(), comm_H_G_norm(0.0)
+    , norm_factor(0.0)
     , emax(0)
     
 {
@@ -106,10 +107,12 @@ void CasimirStore::update_G(const Operator &H, bool does_sampling)
     if(does_sampling) {
         std::cout << "sampling new G" << std::endl;
         auto new_G = resample_G(); 
+        double new_G_norm = new_G.Norm();
 
         auto new_comm_H_G = Commutator::Commutator(new_G, H);
         new_comm_H_G.SetAntiHermitian(); // commutator should be anti hermitian
-        new_comm_H_G /= H_norm + 1e-8;
+        norm_factor = new_G_norm * H_norm;
+        new_comm_H_G /= norm_factor + 1e-8;
         auto new_comm_H_G_norm = new_comm_H_G.Norm();
 
         // the commutator for the new G is large then we accept since we want to force that direction down
@@ -123,10 +126,13 @@ void CasimirStore::update_G(const Operator &H, bool does_sampling)
         }
     }
 
+    double G_norm = G.Norm();
+
 
     comm_H_G = Commutator::Commutator(G, H);
     comm_H_G.SetAntiHermitian();
-    comm_H_G /= H_norm + 1e-8;
+    norm_factor = G_norm * H_norm;
+    comm_H_G /= norm_factor + 1e-8;
     comm_H_G_norm = comm_H_G.Norm();
 }
 
@@ -424,7 +430,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     new_Eta.SetAntiHermitian();
 
     // normalize Eta
-    new_Eta /= H->Norm();
+    new_Eta /= casimir_store->get_norm_factor() + 1e-6;
 
     double comm_norm = casimir_store->get_casimir_lie_bracket_norm();
     double comm_norm_rescale = std::min(std::max(comm_norm/2, -0.99999999), 0.99999999);
