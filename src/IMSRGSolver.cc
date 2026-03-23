@@ -24,7 +24,7 @@ IMSRGSolver::IMSRGSolver()
       norm_domega(0.1), omega_norm_max(2.0), eta_criterion(1e-6), method("magnus_euler"),
       flowfile(""), n_omega_written(0), max_omega_written(500), magnus_adaptive(true), hunter_gatherer(false), perturbative_triples(false),
       /*pert_triples_this_omega(0),pert_triples_sum(0),*/ ode_monitor(*this), ode_mode("H"), ode_e_abs(1e-6), ode_e_rel(1e-6),
-      eta_threshhold(10)
+      eta_threshhold(50)
 {
 }
 
@@ -35,7 +35,7 @@ IMSRGSolver::IMSRGSolver(const Operator &H_in)
       smax(2.0), norm_domega(0.1), omega_norm_max(2.0), eta_criterion(1e-6), method("magnus_euler"),
       flowfile(""), n_omega_written(0), max_omega_written(500), magnus_adaptive(true), hunter_gatherer(false), perturbative_triples(false),
       /*pert_triples_this_omega(0),pert_triples_sum(0),*/ ode_monitor(*this), ode_mode("H"), ode_e_abs(1e-6), ode_e_rel(1e-6),
-      eta_threshhold(10)
+      eta_threshhold(50)
 {
   Eta.Erase();
   Eta.SetAntiHermitian();
@@ -250,7 +250,7 @@ void IMSRGSolver::UpdateEta()
   generator.Update(FlowingOps[0], Eta);
 }
 
-constexpr double sampling_delta = 10.0;
+constexpr double sampling_delta = 5.0;
 
 // This is the default solver
 void IMSRGSolver::Solve_magnus_euler()
