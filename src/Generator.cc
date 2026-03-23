@@ -8,7 +8,10 @@
 #include <string>
 #include <iomanip>
 #include <cmath>
+#include <numbers>
 #include <ranges>
+
+constexpr double pi = 3.14159265358979323846;
 
 using PhysConst::M_NUCLEON;
 using PhysConst::HBARC;
@@ -428,13 +431,22 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     // normalize Eta
     new_Eta /= casimir_store->get_norm_factor() + 1e-8;
 
-    double Eta_norm = new_Eta.Norm();
+    double comm_norm = casimir_store->get_casimir_lie_bracket_norm();
+    double comm_norm_rescale = std::max(std::min(comm_norm/2, -0.9999), 0.9999);
+    double theta = std::asin(comm_norm_rescale);
+    double theta_deg = theta/pi*180;
 
+    // double Eta_norm = new_Eta.Norm();
+    auto flags = std::cout.flags();
+    auto precision = std::cout.precision();
+    
     std::cout << std::scientific << std::setprecision(9)
-              << "Irrep Unmixing Values;\t|[G, H]|/(|G||H|) = " << casimir_store->get_casimir_lie_bracket_norm()
-              << ";\tnormalize|Eta(G, H)| = " << Eta_norm
-              << ";" << '\n';
+              << "Irrep Unmixing Values;\t|[G, H]|/(|G||H|) = " << comm_norm
+              << std::fixed << ";\ttheta = " << theta_deg
+              << " degrees;" << '\n';
 
+    std::cout.flags(flags);
+    std::cout.precision(precision);
 
     *Eta = std::move(new_Eta);
 }

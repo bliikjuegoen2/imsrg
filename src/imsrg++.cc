@@ -1414,6 +1414,9 @@ int main(int argc, char** argv)
             double norm_factor = HNorm * GNorm;
             double norm_factor_bare = HBareNorm * GNorm;
 
+            auto flags = std::cout.flags();
+            auto precision = std::cout.precision();
+
             {
                 Operator comm_G_H = Commutator::Commutator(G, H);
                 comm_G_H /= norm_factor + 1e-10;
@@ -1431,11 +1434,12 @@ int main(int argc, char** argv)
                 std::cout << std::scientific << std::setprecision(9)
                           << "\t|[ `" << casimir.at(i) << "`, HBare]| =\t" << comm_G_HBare_Norm << '\n';           
             }
+
+            std::cout.flags(flags);
+            std::cout.precision(precision);
         }
 
         std::cout << "<\\commutators>" << '\n';
-        std::cout.setf(std::ios::fixed);
-        std::cout << std::setw(18) << std::setprecision(8);
     }();
 
 
