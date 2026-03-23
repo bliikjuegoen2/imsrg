@@ -1434,6 +1434,8 @@ int main(int argc, char** argv)
         }
 
         std::cout << "<\\commutators>" << '\n';
+        std::cout.setf(std::ios::fixed);
+        std::cout << std::setw(18) << std::setprecision(8);
     }();
 
 
