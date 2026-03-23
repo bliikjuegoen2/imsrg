@@ -427,7 +427,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     new_Eta /= H->Norm();
 
     double comm_norm = casimir_store->get_casimir_lie_bracket_norm();
-    double comm_norm_rescale = std::min(std::max(comm_norm/2, -0.9999), 0.9999);
+    double comm_norm_rescale = std::min(std::max(comm_norm/2, -0.99999999), 0.99999999);
     double theta = std::asin(comm_norm_rescale);
     double theta_deg = theta/pi*180;
 
