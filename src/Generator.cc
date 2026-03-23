@@ -201,7 +201,7 @@ void Generator::AddToEta(Operator& H_s, Operator& Eta_s)
       ConstructGenerator_SingleRef( qtransferatanN_func );
    }
    else if (generator_type == "irrep-unmixing") {
-       std::cout << "unmixing enabled [AddToEta]" << std::endl;
+       std::cout << "unmixing enabled [AddToEta]" << '\n';
        ConstructGenerator_IrrepUnmixing();
    }
    else
@@ -413,7 +413,7 @@ void Generator::update_G(const Operator &H, bool does_sampling)
 void Generator::ConstructGenerator_IrrepUnmixing() {
 
     if(casimir_store == nullptr) {
-        std::cerr << "[Generator::ConstructGenerator_IrrepUnmixing], must set casimir operators" << std::endl;
+        std::cerr << "[Generator::ConstructGenerator_IrrepUnmixing], must set casimir operators" << '\n';
         return;
     }
 
@@ -433,7 +433,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     std::cout << std::scientific << std::setprecision(9)
               << "Irrep Unmixing Values;\t|[G, H]|/(|G||H|) = " << casimir_store->get_casimir_lie_bracket_norm()
               << ";\tnormalize|Eta(G, H)| = " << Eta_norm
-              << ";" << std::endl;
+              << ";" << '\n';
 
 
     *Eta = std::move(new_Eta);

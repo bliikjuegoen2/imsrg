@@ -1405,6 +1405,8 @@ int main(int argc, char** argv)
         double HNorm = H.Norm();
         double HBareNorm = HBare.Norm();
         
+        std::cout << "<commutators>" << '\n';
+
         for (size_t i = 0; i < casimir_ops->size(); i++) {
             const Operator &G = casimir_ops->at(i);
 
@@ -1418,7 +1420,7 @@ int main(int argc, char** argv)
                 double comm_G_H_Norm = comm_G_H.Norm();
 
                 std::cout << std::scientific << std::setprecision(9)
-                        << "|[ `" << casimir.at(i) << "`, H]| =\t" << comm_G_H_Norm << std::endl;           
+                        << "\t|[ `" << casimir.at(i) << "`, H]| =\t" << comm_G_H_Norm << '\n';           
             }
 
             {
@@ -1427,9 +1429,11 @@ int main(int argc, char** argv)
                 double comm_G_HBare_Norm = comm_G_HBare.Norm();
 
                 std::cout << std::scientific << std::setprecision(9)
-                        << "|[ `" << casimir.at(i) << "`, HBare]| =\t" << comm_G_HBare_Norm << std::endl;           
+                          << "\t|[ `" << casimir.at(i) << "`, HBare]| =\t" << comm_G_HBare_Norm << '\n';           
             }
         }
+
+        std::cout << "<\\commutators>" << '\n';
     }();
 
 
