@@ -437,9 +437,22 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     new_Eta /= casimir_store->get_norm_factor() + 1e-6;
 
     double comm_norm = casimir_store->get_casimir_lie_bracket_norm();
-    double comm_norm_rescale = std::min(std::max(comm_norm/2, -0.99999999), 0.99999999);
+    double comm_norm_rescale = std::min(comm_norm/2, 0.9999999999999999);
+    // in radians
     double theta = std::asin(comm_norm_rescale);
-    double theta_deg = theta/pi*180;
+
+    // in degrees
+    theta = theta/pi*180;
+    int theta_degs = int(theta);
+
+    // in arcminutes
+    theta = (theta - theta_degs) * 60;
+    int theta_arcminutes = int(theta);
+
+    // in arcseconds
+    theta  = (theta - theta_arcminutes) * 60;
+    double theta_arcseconds = theta;
+
 
     // double Eta_norm = new_Eta.Norm();
     auto flags = std::cout.flags();
@@ -447,8 +460,8 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     
     std::cout << std::scientific << std::setprecision(9)
               << "Irrep Unmixing Values;\t|[G, H]|/(|G||H|) = " << comm_norm
-              << std::fixed << ";\ttheta = " << theta_deg
-              << " degrees;" << '\n';
+              << std::fixed << ";\ttheta = " << theta_degs
+              << " degs " << theta_arcminutes << "' " << theta_arcseconds << "\"; " << '\n';
 
     std::cout.flags(flags);
     std::cout.precision(precision);

@@ -1417,6 +1417,17 @@ int main(int argc, char** argv)
             auto flags = std::cout.flags();
             auto precision = std::cout.precision();
 
+            // Bare
+            {
+                Operator comm_G_HBare = Commutator::Commutator(G, HBare);
+                comm_G_HBare /= norm_factor_bare + 1e-10;
+                double comm_G_HBare_Norm = comm_G_HBare.Norm();
+
+                std::cout << std::scientific << std::setprecision(9)
+                          << "\t|[ `" << casimir.at(i) << "`, HBare]| =\t" << comm_G_HBare_Norm << '\n';           
+            }
+
+            // Evolved
             {
                 Operator comm_G_H = Commutator::Commutator(G, H);
                 comm_G_H /= norm_factor + 1e-10;
@@ -1426,14 +1437,6 @@ int main(int argc, char** argv)
                         << "\t|[ `" << casimir.at(i) << "`, H]| =\t" << comm_G_H_Norm << '\n';           
             }
 
-            {
-                Operator comm_G_HBare = Commutator::Commutator(G, HBare);
-                comm_G_HBare /= norm_factor_bare + 1e-10;
-                double comm_G_HBare_Norm = comm_G_HBare.Norm();
-
-                std::cout << std::scientific << std::setprecision(9)
-                          << "\t|[ `" << casimir.at(i) << "`, HBare]| =\t" << comm_G_HBare_Norm << '\n';           
-            }
 
             std::cout.flags(flags);
             std::cout.precision(precision);
