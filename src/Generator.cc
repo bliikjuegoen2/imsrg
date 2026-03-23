@@ -136,6 +136,10 @@ void CasimirStore::update_G(const Operator &H, bool does_sampling)
     comm_H_G_norm = comm_H_G.Norm();
 }
 
+double CasimirStore::get_norm_factor() const noexcept {
+    return norm_factor;
+}
+
 Operator &CasimirStore::get_casimir_lie_bracket() noexcept
 {
     return comm_H_G;
