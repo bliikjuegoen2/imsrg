@@ -155,6 +155,57 @@ double CasimirStore::get_casimir_lie_bracket_norm() const noexcept {
     return comm_H_G_norm;
 }
 
+// comm_norm is assumed to be normalized |[G,H]|/(|G||H|)
+double comm_to_angle(double comm_norm) {
+    // factor of 2 is needed because (1/2)|[G,H]| <= |G||H|
+    // clamp the norm with in range
+    double comm_norm_rescale = std::min(std::max(comm_norm/2, -0.9999999999999999), 0.9999999999999999);
+
+    if (comm_norm_rescale < 1e-6)      // preserves full double precision
+        return comm_norm_rescale;
+
+    // in radians
+    double theta = std::asin(comm_norm_rescale);
+
+    return theta;
+}
+
+// theta has to be positive for everything to be correct
+std::tuple<int, int, double> angle_to_degs(double theta_rads)
+{
+    double total_arcsec = theta_rads * 180.0 / pi * 3600.0;
+
+    // round once at highest precision
+    total_arcsec = std::round(total_arcsec * 1e5) / 1e5;
+
+    int degs = static_cast<int>(total_arcsec / 3600);
+    total_arcsec -= degs * 3600;
+
+    int mins = static_cast<int>(total_arcsec / 60);
+    total_arcsec -= mins * 60;
+
+    double secs = total_arcsec;
+
+    return {degs, mins, secs};
+}
+
+// theta has to be positive for everything to be correct
+void print_angle(std::ostream &out, std::tuple<int, int, double> theta)
+{
+    int theta_degs;
+    int theta_arcminutes;
+    double theta_arcseconds;
+    std::tie(theta_degs, theta_arcminutes, theta_arcseconds) = theta;
+    auto flags = out.flags();
+    auto precision = out.precision();
+    out << std::setw(3) << std::setfill('0') << theta_degs << "degs "
+        << std::setw(2) << std::setfill('0') << theta_arcminutes << "\' "
+        << std::setw(8) << std::setfill('0')
+        << std::fixed << std::setprecision(5) << theta_arcseconds << "\"";
+
+    out.flags(flags);
+    out.precision(precision);
+}
 
 Generator::Generator()
   : generator_type("white"),/* modelspace(NULL),*/ denominator_cutoff(1e-6)  , denominator_delta(0), denominator_delta_index(-1), denominator_partitioning(Epstein_Nesbet),  only_2b_eta(false), use_isospin_averaging(false), only_1b_eta(false)
@@ -437,34 +488,15 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     new_Eta /= casimir_store->get_norm_factor() + 1e-6;
 
     double comm_norm = casimir_store->get_casimir_lie_bracket_norm();
-    double comm_norm_rescale = std::min(comm_norm/2, 0.9999999999999999);
-    // in radians
-    double theta = std::asin(comm_norm_rescale);
+    double theta = comm_to_angle(comm_norm);
 
-    // in degrees
-    theta = theta/pi*180;
-    int theta_degs = int(theta);
+    std::cout << "theta =\t";
 
-    // in arcminutes
-    theta = (theta - theta_degs) * 60;
-    int theta_arcminutes = int(theta);
+    print_angle(std::cout, angle_to_degs(theta));
 
-    // in arcseconds
-    theta  = (theta - theta_arcminutes) * 60;
-    double theta_arcseconds = theta;
+    std::cout << "\t\n";
 
 
-    // double Eta_norm = new_Eta.Norm();
-    auto flags = std::cout.flags();
-    auto precision = std::cout.precision();
-    
-    std::cout << std::scientific << std::setprecision(9)
-              << "Irrep Unmixing Values;\t|[G, H]|/(|G||H|) = " << comm_norm
-              << std::fixed << ";\ttheta = " << theta_degs
-              << " degs " << theta_arcminutes << "' " << theta_arcseconds << "\"; " << '\n';
-
-    std::cout.flags(flags);
-    std::cout.precision(precision);
 
     *Eta = std::move(new_Eta);
 }

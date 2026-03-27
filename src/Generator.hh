@@ -25,6 +25,7 @@
 
 #include <string>
 #include <random>
+#include <tuple>
 
 class CasimirStore
 {
@@ -58,6 +59,11 @@ class CasimirStore
         double get_norm_factor() const noexcept;
         double get_casimir_lie_bracket_norm() const noexcept;
 };
+
+
+double comm_to_angle(double comm_norm);
+std::tuple<int, int, double> angle_to_degs(double theta_rads);
+void print_angle(std::ostream &stream, std::tuple<int, int, double> theta);
 
 
 class Generator

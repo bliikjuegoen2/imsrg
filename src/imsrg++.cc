@@ -1380,93 +1380,96 @@ int main(int argc, char** argv)
 //      op = imsrgsolver.Transform_Partial(op,nOmega);
 //    }
   }
-
-  //write unmixed hamiltonian
-  if (core_generator == "irrep-unmixing" || valence_generator == "irrep-unmixing") {
-    // only support me2j as of now
-
-    if(valence_file_format != "shell-me2j") {
-      std::cerr << "unsupported output format:\t" << valence_file_format << std::endl;
-      exit(0);
-    }
-
-    const Operator& H = imsrgsolver.GetH_s();
-    const Operator& HBare = imsrgsolver.GetHin();
-
-    [H, HBare, &imsrgsolver, &casimir](){
-
-        std::vector<Operator> *casimir_ops = imsrgsolver.GetGenerator().get_casimir(); 
-
-        if(casimir_ops == nullptr) {
-            std::cerr << "casimirs is empty" << std::endl;
-            return;
-        }
-
-        double HNorm = H.Norm();
-        double HBareNorm = HBare.Norm();
-        
-        std::cout << "<commutators>" << '\n';
-
-        for (size_t i = 0; i < casimir_ops->size(); i++) {
-            const Operator &G = casimir_ops->at(i);
-
-            double GNorm = G.Norm();
-            double norm_factor = HNorm * GNorm;
-            double norm_factor_bare = HBareNorm * GNorm;
-
-            auto flags = std::cout.flags();
-            auto precision = std::cout.precision();
-
-            // Bare
-            {
-                Operator comm_G_HBare = Commutator::Commutator(G, HBare);
-                comm_G_HBare /= norm_factor_bare + 1e-10;
-                double comm_G_HBare_Norm = comm_G_HBare.Norm();
-
-                std::cout << std::scientific << std::setprecision(9)
-                          << "\t|[ `" << casimir.at(i) << "`, HBare]| =\t" << comm_G_HBare_Norm << '\n';           
-            }
-
-            // Evolved
-            {
-                Operator comm_G_H = Commutator::Commutator(G, H);
-                comm_G_H /= norm_factor + 1e-10;
-                double comm_G_H_Norm = comm_G_H.Norm();
-
-                std::cout << std::scientific << std::setprecision(9)
-                        << "\t|[ `" << casimir.at(i) << "`, H]| =\t" << comm_G_H_Norm << '\n';           
-            }
-
-
-            std::cout.flags(flags);
-            std::cout.precision(precision);
-        }
-
-        std::cout << "<\\commutators>" << '\n';
-    }();
-
-
-    rw.write_shell_me2j(intfile+"_H_me2j-double.bin.gz", H
-                        , 8, H.GetModelSpace()->GetEmax(), H.GetModelSpace()->GetE2max());
-
-    if (! rw.on_successful_io()) {
-        std::cout << "me2j: failed to write Hamiltonian" << std::endl;
-    }
-
-    rw.write_shell_me2j(intfile+"_HBare_me2j-double.bin.gz", HBare
-                        , 8, HBare.GetModelSpace()->GetEmax(), HBare.GetModelSpace()->GetE2max());
-
-    if (! rw.on_successful_io()) {
-        std::cout << "me2j: failed to write Hamiltonian" << std::endl;
-    }
-  }
-
   // Write the output
 
   // If we're doing a shell model interaction, write the
   // interaction files to disk.
 //  if (modelspace.valence.size() > 0)
-  else if (modelspace_imsrg.valence.size() > 0)
+//  
+    if (valence_file_format == "shell-me2j") {
+          
+        const Operator& H = imsrgsolver.GetH_s();
+        const Operator& HBare = imsrgsolver.GetHin();
+
+        [H, HBare, &imsrgsolver, &casimir](){
+
+            std::vector<Operator> *casimir_ops = imsrgsolver.GetGenerator().get_casimir(); 
+
+            if(casimir_ops == nullptr) {
+                std::cerr << "casimirs is empty" << std::endl;
+                return;
+            }
+
+            double HNorm = H.Norm();
+            double HBareNorm = HBare.Norm();
+
+            std::cout << "<commutators>" << '\n';
+
+            for (size_t i = 0; i < casimir_ops->size(); i++) {
+                const Operator &G = casimir_ops->at(i);
+
+                double GNorm = G.Norm();
+                double norm_factor = HNorm * GNorm;
+                double norm_factor_bare = HBareNorm * GNorm;
+
+                auto flags = std::cout.flags();
+                auto precision = std::cout.precision();
+
+                // Bare
+                {
+                    Operator comm_G_HBare = Commutator::Commutator(G, HBare);
+                    comm_G_HBare /= norm_factor_bare + 1e-10;
+                    double comm_G_HBare_Norm = comm_G_HBare.Norm();
+
+                    double theta = comm_to_angle(comm_G_HBare_Norm);
+
+                    std::cout << std::setw(20) << "theta-HBare =\t";
+
+                    print_angle(std::cout, angle_to_degs(theta));
+
+                    std::cout << "\t\n";
+                }
+
+                // Evolved
+                {
+                    Operator comm_G_H = Commutator::Commutator(G, H);
+                    comm_G_H /= norm_factor + 1e-10;
+                    double comm_G_H_Norm = comm_G_H.Norm();
+
+                    double theta = comm_to_angle(comm_G_H_Norm);
+
+                    std::cout  << std::setw(20) << "theta =\t";
+
+                    print_angle(std::cout, angle_to_degs(theta));
+
+                    std::cout << "\t\n";
+                }
+
+
+                std::cout.flags(flags);
+                std::cout.precision(precision);
+            }
+
+            std::cout << "<\\commutators>" << '\n';
+        }();
+
+
+        rw.write_shell_me2j(intfile+"_H_me2j-double.bin.gz", H
+                            , 8, H.GetModelSpace()->GetEmax(), H.GetModelSpace()->GetE2max());
+
+        if (! rw.on_successful_io()) {
+            std::cout << "me2j: failed to write Hamiltonian" << std::endl;
+        }
+
+        rw.write_shell_me2j(intfile+"_HBare_me2j-double.bin.gz", HBare
+                            , 8, HBare.GetModelSpace()->GetEmax(), HBare.GetModelSpace()->GetE2max());
+
+        if (! rw.on_successful_io()) {
+            std::cout << "me2j: failed to write Hamiltonian" << std::endl;
+        }
+
+    }
+    else if (modelspace_imsrg.valence.size() > 0)
   {
     if (valence_file_format == "antoine") // this is still being tested...
     {
