@@ -209,9 +209,12 @@ std::string fmt_angle(std::tuple<int, int, double> theta)
     int theta_arcminutes;
     double theta_arcseconds;
     std::tie(theta_degs, theta_arcminutes, theta_arcseconds) = theta;
+
+    int sec_i = static_cast<int>(std::floor(theta_arcseconds));
+    int sec_f = static_cast<int>(std::round((theta_arcseconds - sec_i) * 1e9));
     
     // should be ##degs ##' ##.#####"
-    return (boost::format("%03ddegs %02d' %011.9f\"") % theta_degs % theta_arcminutes % theta_arcseconds).str();
+    return (boost::format("%03ddegs %02d' %02d.%09d\"") % theta_degs % theta_arcminutes % sec_i % sec_f).str();
 }
 
 Generator::Generator()
