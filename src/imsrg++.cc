@@ -1415,6 +1415,8 @@ int main(int argc, char** argv)
                 auto flags = std::cout.flags();
                 auto precision = std::cout.precision();
 
+                std::cout << "< G = " << casimir.at(i) << " >\n";
+
                 // Bare
                 {
                     Operator comm_G_HBare = Commutator::Commutator(G, HBare);
@@ -1423,11 +1425,7 @@ int main(int argc, char** argv)
 
                     double theta = comm_to_angle(comm_G_HBare_Norm);
 
-                    std::cout << std::setw(20) << "theta-HBare =\t";
-
-                    print_angle(std::cout, angle_to_degs(theta));
-
-                    std::cout << "\t\n";
+                    std::cout << std::setw(20) << "\ttheta-HBare =\t" << fmt_angle(angle_to_degs(theta)) << "\t\n";
                 }
 
                 // Evolved
@@ -1438,12 +1436,11 @@ int main(int argc, char** argv)
 
                     double theta = comm_to_angle(comm_G_H_Norm);
 
-                    std::cout  << std::setw(20) << "theta =\t";
-
-                    print_angle(std::cout, angle_to_degs(theta));
-
-                    std::cout << "\t\n";
+                    std::cout  << std::setw(20) << "\ttheta =\t" << fmt_angle(angle_to_degs(theta)) << "\t\n";
+                    
                 }
+
+                std::cout << "< \\G = " << casimir.at(i) << " >\n";
 
 
                 std::cout.flags(flags);

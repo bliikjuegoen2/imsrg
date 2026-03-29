@@ -11,6 +11,7 @@
 #include <numbers>
 #include <ranges>
 #include <boost/io/ios_state.hpp>
+#include <boost/format.hpp>
 
 constexpr double pi = 3.14159265358979323846;
 
@@ -191,23 +192,15 @@ std::tuple<int, int, double> angle_to_degs(double theta_rads)
 }
 
 // theta has to be positive for everything to be correct
-void print_angle(std::ostream &out, std::tuple<int, int, double> theta)
+std::string fmt_angle(std::tuple<int, int, double> theta)
 {
     int theta_degs;
     int theta_arcminutes;
     double theta_arcseconds;
     std::tie(theta_degs, theta_arcminutes, theta_arcseconds) = theta;
-
-    boost::io::ios_flags_saver fmt_state(out);
-    
     
     // should be ##degs ##' ##.#####"
-    out << std::setw(3) << std::setfill('0') << theta_degs << "degs "
-        << std::setw(2) << std::setfill('0') << theta_arcminutes << "\' "
-        << std::setw(8) << std::setfill('0')
-        << std::fixed << std::setprecision(5) << theta_arcseconds << "\"";
-
-    fmt_state.restore();
+    return (boost::format("%03ddegs %02d' %08.5f\"") % theta_degs % theta_arcminutes % theta_arcseconds).str();
 }
 
 Generator::Generator()
@@ -493,11 +486,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     double comm_norm = casimir_store->get_casimir_lie_bracket_norm();
     double theta = comm_to_angle(comm_norm);
 
-    std::cout << "theta =\t";
-
-    print_angle(std::cout, angle_to_degs(theta));
-
-    std::cout << "\t\n";
+    std::cout << "theta =\t" << fmt_angle(angle_to_degs(theta)) << "\t\n";
 
 
 
