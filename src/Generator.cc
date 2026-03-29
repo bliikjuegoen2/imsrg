@@ -200,7 +200,7 @@ std::string fmt_angle(std::tuple<int, int, double> theta)
     std::tie(theta_degs, theta_arcminutes, theta_arcseconds) = theta;
     
     // should be ##degs ##' ##.#####"
-    return (boost::format("%03ddegs %02d' %08.5f\"") % theta_degs % theta_arcminutes % theta_arcseconds).str();
+    return (boost::format("%03ddegs %02d' %011.9f\"") % theta_degs % theta_arcminutes % theta_arcseconds).str();
 }
 
 Generator::Generator()
@@ -466,6 +466,7 @@ void Generator::update_G(const Operator &H, bool does_sampling)
 }
 
 void Generator::ConstructGenerator_IrrepUnmixing() {
+
 
     if(casimir_store == nullptr) {
         std::cerr << "[Generator::ConstructGenerator_IrrepUnmixing], must set casimir operators" << '\n';
