@@ -32,6 +32,7 @@ CasimirStore::CasimirStore(std::vector<Operator> casimir_operators)
     , G()
     , comm_H_G(), comm_H_G_norm(0.0)
     , norm_factor(0.0)
+    , generator_factor(0.0)
     , emax(0)
     
 {
@@ -61,6 +62,16 @@ Operator &CasimirStore::get_G() noexcept
 const Operator &CasimirStore::get_G() const noexcept
 {
     return G;
+}
+
+void CasimirStore::set_generator_factor(double factor) noexcept
+{
+    generator_factor = factor;
+}
+
+double CasimirStore::get_generator_factor() const noexcept
+{
+    return generator_factor;
 }
 
 
@@ -462,6 +473,11 @@ void Generator::update_G(const Operator &H, bool does_sampling)
         return;
     }
 
+    // should only perform calculations if we are unmixing
+    if (generator_type != "irrep-unmixing") {
+        return;
+    }
+
     casimir_store->update_G(H, does_sampling);
 }
 
@@ -482,7 +498,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     new_Eta.SetAntiHermitian();
 
     // normalize Eta
-    new_Eta /= casimir_store->get_norm_factor() + 1e-6;
+    new_Eta *= casimir_store->get_generator_factor()/(casimir_store->get_norm_factor() + 1e-6);
 
     double comm_norm = casimir_store->get_casimir_lie_bracket_norm();
     double theta = comm_to_angle(comm_norm);

@@ -251,6 +251,7 @@ int main(int argc, char** argv)
   int e2Max_imsrg = parameters.i("e2max_imsrg");
   int e3Max_imsrg = parameters.i("e3max_imsrg");
   int eMax_3body_imsrg = parameters.i("emax_3body_imsrg");
+  int eta_threshhold = parameters.i("eta_threshhold");
 //  if ( not ( eMax_imsrg==-1 and e2Max_imsrg==-1 and e3Max_imsrg==-1 ) )
 //  {
 //    if ( eMax_imsrg==-1 ) eMax_imsrg = eMax;
@@ -275,6 +276,7 @@ int main(int argc, char** argv)
   double dE3max = parameters.d("dE3max");
   double OccNat3Cut = parameters.d("OccNat3Cut");
   double threebody_threshold = parameters.d("threebody_threshold");
+  double irrep_unmixing_factor = parameters.d("irrep_unmixing_factor");
 
   std::vector<std::string> opnames = parameters.v("Operators");
   std::vector<std::string> opsfromfile = parameters.v("OperatorsFromFile");
@@ -1092,6 +1094,7 @@ int main(int argc, char** argv)
   imsrgsolver.SetMethod(method);
   imsrgsolver.SetDenominatorPartitioning(denominator_partitioning);
   imsrgsolver.SetEtaCriterion(eta_criterion);
+  imsrgsolver.SetEtaThreshhold(eta_threshhold);
   imsrgsolver.GetGenerator().SetOnly2bEta(only_2b_eta);
   imsrgsolver.max_omega_written = 500;
   imsrgsolver.SetHunterGatherer( hunter_gatherer );
@@ -1179,6 +1182,7 @@ int main(int argc, char** argv)
     std::cout << "retrieved casimir metadata" << std::endl;
 
     casimir_store.set_casimir(std::move(Gs));
+    casimir_store.set_generator_factor(irrep_unmixing_factor);
     imsrgsolver.set_casimir_store(casimir_store);
 
   }

@@ -37,6 +37,7 @@ class CasimirStore
         Operator comm_H_G;
         double comm_H_G_norm;
         double norm_factor;
+        double generator_factor;
         size_t emax; // need this to normalize the unmixing generator
 
         
@@ -58,6 +59,8 @@ class CasimirStore
         const Operator &get_casimir_lie_bracket() const noexcept;
         double get_norm_factor() const noexcept;
         double get_casimir_lie_bracket_norm() const noexcept;
+        void set_generator_factor(double factor) noexcept;
+        double get_generator_factor() const noexcept;
 };
 
 

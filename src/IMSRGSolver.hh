@@ -129,6 +129,7 @@ class IMSRGSolver
   void SetOmegaNormMax(double x){omega_norm_max = x;};
   void SetODETolerance(float x){ode_e_abs=x;ode_e_rel=x;};
   void SetEtaCriterion(float x){eta_criterion = x;};
+        void SetEtaThreshhold(int x){eta_threshhold = x;};
   void SetMagnusAdaptive(bool b=true){magnus_adaptive = b;};
   void SetHunterGatherer(bool b=true){hunter_gatherer = b;};
   void SetPerturbativeTriples(bool b=true){perturbative_triples = b;};

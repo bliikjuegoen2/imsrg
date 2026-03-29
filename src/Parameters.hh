@@ -122,6 +122,7 @@ std::map<std::string,double> Parameters::double_par = {
   {"dE3max",		  99},  // cut on energies which limits the 3-body states considered in IMSRG(3) commutators
   {"OccNat3Cut",	  -1},  // cut on natural orbital occupations which limits the 3-body states considered in IMSRG(3) commutators
   {"threebody_threshold",  0},   // when the norm of A or B is below threebody_threshold, don't use IMSRG(3) in evaluating [A,B].
+  {"irrep_unmixing_factor", 1.0},
 
 };
 
@@ -144,6 +145,7 @@ std::map<std::string,int> Parameters::int_par = {
   {"e2max_imsrg",       -1}, // e2max for imsrg part. defaults to 2*emax_imsrg
   {"e3max_imsrg",       -1}, // e3max for imsrg part. defaults to min(e3max,3*emax_imsrg)
   {"emax_3body_imsrg",        -1}, // emax truncation for the 3-body operators in the imsrg part (default: emax_imsrg)
+  {"eta_threshhold", 50},
 };
 
 std::map<std::string,std::vector<std::string>> Parameters::vec_par = {
