@@ -10,6 +10,7 @@
 #include <cmath>
 #include <numbers>
 #include <ranges>
+#include <boost/io/ios_state.hpp>
 
 constexpr double pi = 3.14159265358979323846;
 
@@ -196,15 +197,17 @@ void print_angle(std::ostream &out, std::tuple<int, int, double> theta)
     int theta_arcminutes;
     double theta_arcseconds;
     std::tie(theta_degs, theta_arcminutes, theta_arcseconds) = theta;
-    auto flags = out.flags();
-    auto precision = out.precision();
+
+    boost::io::ios_flags_saver fmt_state(out);
+    
+    
+    // should be ##degs ##' ##.#####"
     out << std::setw(3) << std::setfill('0') << theta_degs << "degs "
         << std::setw(2) << std::setfill('0') << theta_arcminutes << "\' "
         << std::setw(8) << std::setfill('0')
         << std::fixed << std::setprecision(5) << theta_arcseconds << "\"";
 
-    out.flags(flags);
-    out.precision(precision);
+    fmt_state.restore();
 }
 
 Generator::Generator()
