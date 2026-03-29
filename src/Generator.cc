@@ -486,7 +486,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     double comm_norm = casimir_store->get_casimir_lie_bracket_norm();
     double theta = comm_to_angle(comm_norm);
 
-    std::cout << "theta =\t" << fmt_angle(angle_to_degs(theta)) << "\t\n";
+    std::cout << "theta = " << fmt_angle(angle_to_degs(theta)) << "\t\n";
 
 
 
