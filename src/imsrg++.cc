@@ -1083,6 +1083,8 @@ int main(int argc, char** argv)
     return 0;
   }
 
+  const Operator HBareSaved = HNO; // make a copy
+
 
 
 
@@ -1393,7 +1395,7 @@ int main(int argc, char** argv)
     if (valence_file_format == "shell-me2j") {
           
         const Operator& H = imsrgsolver.GetH_s();
-        const Operator& HBare = imsrgsolver.GetHin();
+        const Operator& HBare = HBareSaved;
 
 
         [H, HBare, &imsrgsolver, &casimir](){
