@@ -1395,7 +1395,9 @@ int main(int argc, char** argv)
         const Operator& H = imsrgsolver.GetH_s();
         const Operator& HBare = imsrgsolver.GetHin();
 
+
         [H, HBare, &imsrgsolver, &casimir](){
+
 
             std::vector<Operator> *casimir_ops = imsrgsolver.GetGenerator().get_casimir(); 
 
@@ -1404,8 +1406,14 @@ int main(int argc, char** argv)
                 return;
             }
 
+
             double HNorm = H.Norm();
             double HBareNorm = HBare.Norm();
+
+            std::cout << "<norm>" << '\n';
+            std::cout << std::setw(20) << "\tHBare\t= " << HBareNorm << '\n';
+            std::cout << std::setw(20) << "\tH\t= " << HNorm << '\n';
+            std::cout << "<\\norm>" << '\n';
 
             std::cout << "<commutators>" << '\n';
 
