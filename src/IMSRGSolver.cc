@@ -547,6 +547,9 @@ void IMSRGSolver::Solve_magnus_modified_euler()
 void IMSRGSolver::Solve_flow_RK4()
 {
   istep = 0;
+  int eta_tries = 0;
+  double last_sampling = 0.0;
+  generator.update_G(FlowingOps[0], true);
   generator.Update(FlowingOps[0], Eta);
 
   if (generator.GetType() == "shell-model-atan")
@@ -565,11 +568,33 @@ void IMSRGSolver::Solve_flow_RK4()
 
   for (istep = 1; s < smax; ++istep)
   {
+    bool does_sampling = false;
 
     double norm_eta = Eta.Norm();
     if (norm_eta < eta_criterion)
     {
-      break;
+        eta_tries++;
+        std::cout << "|eta| = " << norm_eta << " has met criterion" << '\n'
+                  << "eta_tries = " << eta_tries << std::endl;
+
+        // might be time to try another direction
+        does_sampling = true;
+    }
+    else {
+        eta_tries = 0;
+    }
+    if (eta_tries > eta_threshhold) {
+        std::cout << "number of tries has been met" << std::endl;
+        break;
+    }
+    if(last_sampling + sampling_delta < s) {
+        last_sampling = s;
+        does_sampling = true;
+    }
+    if(does_sampling)
+    {
+        generator.update_G(FlowingOps[0], true);
+        generator.Update(FlowingOps[0], Eta);
     }
 
     ds = std::min(ds_max, smax - s);
@@ -582,6 +607,8 @@ void IMSRGSolver::Solve_flow_RK4()
     std::vector<Operator> K4(nops);
     std::vector<Operator> Ktmp(nops);
 
+    
+
     for (int i = 0; i < nops; i++)
     {
       if (i == 0)
@@ -590,10 +617,13 @@ void IMSRGSolver::Solve_flow_RK4()
         K1[i] = Commutator::Commutator(Eta, FlowingOps[i]);
       Ktmp[i] = FlowingOps[i] + 0.5 * ds * K1[i];
     }
+
+    
     //      Operator K1 = Commutator::Commutator( Eta, Hs );
     //      Operator Htmp = Hs + 0.5*ds*K1[0];
     //      generator.Update(&Htmp,&Eta);
     //      generator.Update(&Ktmp[0],&Eta);
+    generator.update_G(Ktmp[0], false);
     generator.Update(Ktmp[0], Eta);
     for (int i = 0; i < nops; i++)
     {
@@ -608,6 +638,7 @@ void IMSRGSolver::Solve_flow_RK4()
     //      Htmp = Hs + 0.5*ds*K2;
     //      generator.Update(&Htmp,&Eta);
     //      generator.Update(&Ktmp[0],&Eta);
+    generator.update_G(Ktmp[0], false);
     generator.Update(Ktmp[0], Eta);
     for (int i = 0; i < nops; i++)
     {
@@ -622,6 +653,7 @@ void IMSRGSolver::Solve_flow_RK4()
     //      Htmp = Hs + 1.0*ds*K3;
     //      generator.Update(&Htmp,&Eta);
     //      generator.Update(&Ktmp[0],&Eta);
+    generator.update_G(Ktmp[0], false);
     generator.Update(Ktmp[0], Eta);
     for (int i = 0; i < nops; i++)
     {
@@ -656,10 +688,13 @@ void IMSRGSolver::Solve_flow_RK4()
       }
       goosetank_chi += goosetank_dchi * ds;
       //        std::cout << " " << __FILE__ << "  line " << __LINE__ << s << "  " << goosetank_chi.OneBody(1,1) << std::endl;;
+      
+      
     }
 
     //      if ( generator.GetType() == "rspace" ) { generator.SetRegulatorLength(s); };
     //      generator.Update(&FlowingOps[0],&Eta);
+    generator.update_G(FlowingOps[0], false);
     generator.Update(FlowingOps[0], Eta);
     //      cumulative_error += EstimateStepError();
 
