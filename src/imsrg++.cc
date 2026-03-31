@@ -1429,7 +1429,7 @@ int main(int argc, char** argv)
 
                     double theta = comm_to_angle(comm_G_HBare_Norm);
 
-                    std::cout << std::setw(20) << "\ttheta-HBare = " << fmt_angle(angle_to_degs(theta)) << "\t\n";
+                    std::cout << std::setw(20) << "\ttheta-HBare\t= " << fmt_angle(angle_to_degs(theta)) << "\t\n";
                 }
 
                 // Evolved
@@ -1440,7 +1440,7 @@ int main(int argc, char** argv)
 
                     double theta = comm_to_angle(comm_G_H_Norm);
 
-                    std::cout  << std::setw(20) << "\ttheta = " << fmt_angle(angle_to_degs(theta)) << "\t\n";
+                    std::cout  << std::setw(20) << "\ttheta\t= " << fmt_angle(angle_to_degs(theta)) << "\t\n";
                     
                 }
 
