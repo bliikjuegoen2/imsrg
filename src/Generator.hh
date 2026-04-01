@@ -34,8 +34,8 @@ class CasimirStore
         std::normal_distribution<double> normal;
         std::vector<Operator> Gs;
         Operator G;
-        Operator comm_H_G;
-        double comm_H_G_norm;
+        Operator comm_G_H;
+        double comm_G_H_norm;
         double norm_factor;
         double generator_factor;
         size_t emax; // need this to normalize the unmixing generator
@@ -67,7 +67,7 @@ class CasimirStore
 double comm_to_angle(double comm_norm);
 std::tuple<int, int, double> angle_to_degs(double theta_rads);
 std::string fmt_angle(std::tuple<int, int, double> theta);
-Operator lie_bracket(const Operator &X, const Operator &Y);
+// Operator lie_bracket(const Operator &X, const Operator &Y);
 
 
 class Generator

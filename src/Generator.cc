@@ -26,25 +26,25 @@ std::function<double(double,double)> Generator::imaginarytime_func = [] (double 
 std::function<double(double,double)> Generator::qtransferatan1_func = [](double Hod, double denom){return pow(std::abs(denom)*M_NUCLEON/HBARC/HBARC, 0.5*1) * atan_func(Hod, denom);};
 
 
-Operator lie_bracket(const Operator &X, const Operator &Y)
-{
-    Operator Z = Commutator::Commutator(X, Y);
+// Operator lie_bracket(const Operator &X, const Operator &Y)
+// {
+//     Operator Z = Commutator::Commutator(X, Y);
 
-    Commutator::FactorizedDoubleCommutator::SetUse_1b_Intermediates(true);
-    Commutator::FactorizedDoubleCommutator::SetUse_2b_Intermediates(true);
+//     Commutator::FactorizedDoubleCommutator::SetUse_1b_Intermediates(true);
+//     Commutator::FactorizedDoubleCommutator::SetUse_2b_Intermediates(true);
 
-    Commutator::FactorizedDoubleCommutator::comm223_231(X, Y, Z);
-    Commutator::FactorizedDoubleCommutator::comm223_232(X, Y, Z);
+//     Commutator::FactorizedDoubleCommutator::comm223_231(X, Y, Z);
+//     Commutator::FactorizedDoubleCommutator::comm223_232(X, Y, Z);
 
-    return Z;
-}
+//     return Z;
+// }
 
 CasimirStore::CasimirStore(std::vector<Operator> casimir_operators)
     : rng(std::random_device{}())
     , normal(0.0,1.0) 
     , Gs(std::move(casimir_operators))
     , G()
-    , comm_H_G(), comm_H_G_norm(0.0)
+    , comm_G_H(), comm_G_H_norm(0.0)
     , norm_factor(0.0)
     , generator_factor(0.0)
     , emax(0)
@@ -136,18 +136,19 @@ void CasimirStore::update_G(const Operator &H, bool does_sampling)
         auto new_G = resample_G(); 
         double new_G_norm = new_G.Norm();
 
-        auto new_comm_H_G = lie_bracket(new_G, H);
-        new_comm_H_G.SetAntiHermitian(); // commutator should be anti hermitian
+        // auto new_comm_H_G = lie_bracket(new_G, H);
+        auto new_comm_G_H = Commutator::Commutator(new_G, H);
+        new_comm_G_H.SetAntiHermitian(); // commutator should be anti hermitian
         norm_factor = new_G_norm * H_norm;
-        new_comm_H_G /= norm_factor + 1e-8;
-        auto new_comm_H_G_norm = new_comm_H_G.Norm();
+        new_comm_G_H /= norm_factor + 1e-8;
+        auto new_comm_G_H_norm = new_comm_G_H.Norm();
 
         // the commutator for the new G is large then we accept since we want to force that direction down
         // if its small than the imsrg process is basically done
-        if(new_comm_H_G_norm > comm_H_G_norm) {
+        if(new_comm_G_H_norm > comm_G_H_norm) {
             G = std::move(new_G);
-            comm_H_G = std::move(new_comm_H_G);
-            comm_H_G_norm = new_comm_H_G_norm;
+            comm_G_H = std::move(new_comm_G_H);
+            comm_G_H_norm = new_comm_G_H_norm;
             
             return;
         }
@@ -156,11 +157,12 @@ void CasimirStore::update_G(const Operator &H, bool does_sampling)
     double G_norm = G.Norm();
 
 
-    comm_H_G = lie_bracket(G, H);
-    comm_H_G.SetAntiHermitian();
+    // comm_H_G = lie_bracket(G, H);
+    comm_G_H = Commutator::Commutator(G, H);
+    comm_G_H.SetAntiHermitian();
     norm_factor = G_norm * H_norm;
-    comm_H_G /= norm_factor + 1e-8;
-    comm_H_G_norm = comm_H_G.Norm();
+    comm_G_H /= norm_factor + 1e-8;
+    comm_G_H_norm = comm_G_H.Norm();
 }
 
 double CasimirStore::get_norm_factor() const noexcept {
@@ -169,17 +171,17 @@ double CasimirStore::get_norm_factor() const noexcept {
 
 Operator &CasimirStore::get_casimir_lie_bracket() noexcept
 {
-    return comm_H_G;
+    return comm_G_H;
 }
 
 const Operator &CasimirStore::get_casimir_lie_bracket() const noexcept
 {
-    return comm_H_G;
+    return comm_G_H;
 }
 
 
 double CasimirStore::get_casimir_lie_bracket_norm() const noexcept {
-    return comm_H_G_norm;
+    return comm_G_H_norm;
 }
 
 // comm_norm is assumed to be normalized |[G,H]|/(|G||H|)
@@ -506,12 +508,21 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
         return;
     }
 
+    Commutator::FactorizedDoubleCommutator::SetUse_1b_Intermediates(true);
+    Commutator::FactorizedDoubleCommutator::SetUse_2b_Intermediates(true);
+
     const Operator &G = casimir_store->get_G();
-    const Operator &comm_H_G = casimir_store->get_casimir_lie_bracket();
+    const Operator &comm_G_H = casimir_store->get_casimir_lie_bracket();
+
+    // [[G,H],H]
+    Operator GHH = Commutator::Commutator(comm_G_H, *H);
     
+    Commutator::FactorizedDoubleCommutator::comm223_231(*H, G, GHH);
+    Commutator::FactorizedDoubleCommutator::comm223_232(*H, G, GHH);
 
     // [[[G,H],H],G]
-    Operator new_Eta = lie_bracket(lie_bracket(comm_H_G, *H), G);
+    // Operator new_Eta = lie_bracket(lie_bracket(comm_H_G, *H), G);
+    Operator new_Eta = Commutator::Commutator(GHH, G);
     new_Eta.SetAntiHermitian();
 
     // normalize Eta
