@@ -67,6 +67,7 @@ class CasimirStore
 double comm_to_angle(double comm_norm);
 std::tuple<int, int, double> angle_to_degs(double theta_rads);
 std::string fmt_angle(std::tuple<int, int, double> theta);
+Operator lie_bracket(const Operator &X, const Operator &Y);
 
 
 class Generator

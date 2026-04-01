@@ -25,6 +25,20 @@ std::function<double(double,double)> Generator::imaginarytime_func = [] (double 
 
 std::function<double(double,double)> Generator::qtransferatan1_func = [](double Hod, double denom){return pow(std::abs(denom)*M_NUCLEON/HBARC/HBARC, 0.5*1) * atan_func(Hod, denom);};
 
+
+Operator lie_bracket(const Operator &X, const Operator &Y)
+{
+    Operator Z = Commutator::Commutator(X, Y);
+
+    Commutator::FactorizedDoubleCommutator::SetUse_1b_Intermediates(true);
+    Commutator::FactorizedDoubleCommutator::SetUse_2b_Intermediates(true);
+
+    Commutator::FactorizedDoubleCommutator::comm223_231(X, Y, Z);
+    Commutator::FactorizedDoubleCommutator::comm223_232(X, Y, Z);
+
+    return Z;
+}
+
 CasimirStore::CasimirStore(std::vector<Operator> casimir_operators)
     : rng(std::random_device{}())
     , normal(0.0,1.0) 
@@ -122,7 +136,7 @@ void CasimirStore::update_G(const Operator &H, bool does_sampling)
         auto new_G = resample_G(); 
         double new_G_norm = new_G.Norm();
 
-        auto new_comm_H_G = Commutator::Commutator(new_G, H);
+        auto new_comm_H_G = lie_bracket(new_G, H);
         new_comm_H_G.SetAntiHermitian(); // commutator should be anti hermitian
         norm_factor = new_G_norm * H_norm;
         new_comm_H_G /= norm_factor + 1e-8;
@@ -142,7 +156,7 @@ void CasimirStore::update_G(const Operator &H, bool does_sampling)
     double G_norm = G.Norm();
 
 
-    comm_H_G = Commutator::Commutator(G, H);
+    comm_H_G = lie_bracket(G, H);
     comm_H_G.SetAntiHermitian();
     norm_factor = G_norm * H_norm;
     comm_H_G /= norm_factor + 1e-8;
@@ -497,7 +511,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     
 
     // [[[G,H],H],G]
-    Operator new_Eta = Commutator::Commutator(Commutator::Commutator(comm_H_G, *H), G);
+    Operator new_Eta = lie_bracket(lie_bracket(comm_H_G, *H), G);
     new_Eta.SetAntiHermitian();
 
     // normalize Eta
