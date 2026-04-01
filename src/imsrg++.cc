@@ -1433,7 +1433,7 @@ int main(int argc, char** argv)
 
                 // Bare
                 {
-                    Operator comm_G_HBare = Commutator::Commutator(G, HBare);
+                    Operator comm_G_HBare = lie_bracket(G, HBare);
                     comm_G_HBare /= norm_factor_bare + 1e-10;
                     double comm_G_HBare_Norm = comm_G_HBare.Norm();
 
@@ -1444,7 +1444,7 @@ int main(int argc, char** argv)
 
                 // Evolved
                 {
-                    Operator comm_G_H = Commutator::Commutator(G, H);
+                    Operator comm_G_H = lie_bracket(G, H);
                     comm_G_H /= norm_factor + 1e-10;
                     double comm_G_H_Norm = comm_G_H.Norm();
 
