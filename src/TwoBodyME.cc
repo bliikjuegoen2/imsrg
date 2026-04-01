@@ -202,7 +202,7 @@ double TwoBodyME::GetTBME(int ch_bra, int ch_ket, int a, int b, int c, int d) co
    return norm * GetTBME_norm(ch_bra,ch_ket,a,b,c,d);
 }
 
-/// This returns the normalized matrix element 
+/// This returns the normalized matrix element
 double TwoBodyME::GetTBME_norm(int ch_bra, int ch_ket, int a, int b, int c, int d) const
 {
    if (not allocated) return 0;
@@ -215,7 +215,7 @@ double TwoBodyME::GetTBME_norm(int ch_bra, int ch_ket, int a, int b, int c, int 
    {
       return 0;
    }
-     
+
    Ket & bra = tbc_bra.GetKet(bra_ind);
    Ket & ket = tbc_ket.GetKet(ket_ind);
 
@@ -703,7 +703,7 @@ double TwoBodyME::GetTBMEmonopole(int a, int b, int c, int d) const
 //
 //   int jmin = std::abs(oa.j2 - ob.j2)/2;
 //   int jmax = (oa.j2 + ob.j2)/2;
-//   
+//
 //   for (int J=jmin;J<=jmax;++J)
 //   {
 //      size_t chab = modelspace->GetTwoBodyChannelIndex(J,parityab,Tzab);
@@ -739,7 +739,7 @@ double TwoBodyME::GetTBMEmonopole(int a, int b, int c, int d) const
 //
 //   int jmin = std::abs(oa.j2 - ob.j2)/2;
 //   int jmax = (oa.j2 + ob.j2)/2;
-//   
+//
 //   for (int J=jmin;J<=jmax;++J)
 //   {
 //      size_t chab = modelspace->GetTwoBodyChannelIndex(J,parityab,Tzab);
@@ -774,7 +774,7 @@ double TwoBodyME::GetTBMEmonopole_norm(int a, int b, int c, int d) const
 
    int jmin = std::abs(oa.j2 - ob.j2)/2;
    int jmax = (oa.j2 + ob.j2)/2;
-   
+
    for (int J=jmin;J<=jmax;++J)
    {
       size_t chab = modelspace->GetTwoBodyChannelIndex(J,parityab,Tzab);
@@ -905,7 +905,7 @@ void TwoBodyME::Eye()
 
 void TwoBodyME::PrintMatrix(size_t chbra,size_t chket) const
 {
-   std::cout.precision(12); 
+   std::cout.precision(12);
    MatEl.at({chbra,chket}).raw_print();
 //   MatEl.at({chbra,chket}).print();
 }
@@ -914,8 +914,8 @@ void TwoBodyME::PrintAllMatrices() const
 {
   for ( auto& itmat : MatEl )
   {
-    
-    arma::uvec subscript = itmat.second.is_empty()  ?  arma::uvec({0,0}) 
+
+    arma::uvec subscript = itmat.second.is_empty()  ?  arma::uvec({0,0})
                            :   arma::ind2sub( arma::size(itmat.second),  arma::abs(itmat.second).index_max() ) ; // get row,column of maximum entry
     std::cout << "ch_bra, ch_ket : " << itmat.first[0] << " " << itmat.first[1] << "     norm = " << arma::norm( itmat.second, "fro")
               << "  max entry at ( " << subscript(0) << " , " << subscript(1) << " ) ";
