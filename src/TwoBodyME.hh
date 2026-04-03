@@ -79,6 +79,8 @@ class TwoBodyME
   TwoBodyME& operator+=(const TwoBodyME&);
   TwoBodyME& operator-=(const TwoBodyME&);
 
+  TwoBodyME include_obme(const arma::mat &obme) const;
+
 //  void Copy(const TwoBodyME&);
   void Allocate();
   void Deallocate();

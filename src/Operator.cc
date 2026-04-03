@@ -996,6 +996,27 @@ void Operator::EraseThreeLeg()
   ThreeLeg.Erase();
 }
 
+// double Operator::fold_one_into_two_body_me(int a,int b,int c,int d) const
+// {
+//     double equiv_tbme = 0.0;
+
+//     if (b == d) equiv_tbme += OneBody(a,c);
+//     if (b == c) equiv_tbme -= OneBody(a,d);
+//     if (a == d) equiv_tbme -= OneBody(b,c);
+//     if (a == c) equiv_tbme += OneBody(b,d);
+
+//     return equiv_tbme
+// }
+
+Operator Operator::tbme_only() const
+{
+    Operator tbme_this(*modelspace);
+
+    tbme_this.TwoBody = TwoBody.include_obme(OneBody);
+
+    return tbme_this;
+}
+
 void Operator::SetHermitian()
 {
   hermitian = true;

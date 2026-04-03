@@ -136,6 +136,55 @@ void TwoBodyME::print_matrix_keys() const
    return *this;
  }
 
+TwoBodyME TwoBodyME::include_obme(const arma::mat &obme) const
+{
+    TwoBodyME combined = *this;
+
+    double A_minus_1 = modelspace->GetTargetMass() - 1;
+
+    for ( auto& itmat : combined.MatEl )
+    {
+        auto ch_bra = itmat.first[0];
+        auto ch_ket = itmat.first[1];
+        
+        TwoBodyChannel& tbc_bra = modelspace->GetTwoBodyChannel(ch_bra);
+        TwoBodyChannel& tbc_ket = modelspace->GetTwoBodyChannel(ch_ket);
+
+        arma::mat& matrix = itmat.second;
+
+        // Loop over the rows (bra) and columns (ket) of the channel matrix
+        for (int i = 0; i < tbc_bra.GetNumberKets(); ++i)
+        {
+            // GetKet(i) returns a reference to the Ket struct containing indices p, q
+            const Ket& bra = tbc_bra.GetKet(i);
+            
+            for (int j = 0; j < tbc_ket.GetNumberKets(); ++j)
+            {
+                const Ket& ket = tbc_ket.GetKet(j);
+
+                // --- 4. Folding (Embedding) Logic ---
+                // We perform the antisymmetrized expansion of 1-body into 2-body space.
+                double fold = 0.0;
+                if (bra.q == ket.q) fold += obme(bra.p, ket.p);
+                if (bra.q == ket.p) fold -= obme(bra.p, ket.q);
+                if (bra.p == ket.q) fold -= obme(bra.q, ket.p);
+                if (bra.p == ket.p) fold += obme(bra.q, ket.q);
+
+                fold /= A_minus_1;
+
+                // --- 5. Normalization Handling ---
+                // Your class stores normalized TBMEs: Gamma = ~Gamma / sqrt((1+d_pq)(1+d_rs))
+                // We must apply this factor to the unnormalized 'fold' result.
+                double norm_bra = (bra.p == bra.q) ? 1.41421356237 : 1.0;
+                double norm_ket = (ket.p == ket.q) ? 1.41421356237 : 1.0;
+                
+                matrix(i, j) += fold / (norm_bra * norm_ket);
+            }
+        }
+    }
+
+    return combined;
+}
 
 
 void TwoBodyME::Allocate()

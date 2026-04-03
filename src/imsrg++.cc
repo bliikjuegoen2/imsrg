@@ -1467,14 +1467,14 @@ int main(int argc, char** argv)
         }();
 
 
-        rw.write_shell_me2j(intfile+"_H_me2j-double.bin.gz", H
+        rw.write_shell_me2j(intfile+"_H_me2j-double.bin.gz", H.tbme_only()
                             , 8, H.GetModelSpace()->GetEmax(), H.GetModelSpace()->GetE2max());
 
         if (! rw.on_successful_io()) {
             std::cout << "me2j: failed to write Hamiltonian" << std::endl;
         }
 
-        rw.write_shell_me2j(intfile+"_HBare_me2j-double.bin.gz", HBare
+        rw.write_shell_me2j(intfile+"_HBare_me2j-double.bin.gz", HBare.tbme_only()
                             , 8, HBare.GetModelSpace()->GetEmax(), HBare.GetModelSpace()->GetE2max());
 
         if (! rw.on_successful_io()) {
@@ -1708,7 +1708,7 @@ int main(int argc, char** argv)
       std::cout << "writing scalar files " << std::endl;
       if (valence_file_format == "shell-me2j")
       {
-        rw.write_shell_me2j(intfile+opname+"_me2j-double.bin.gz", op
+        rw.write_shell_me2j(intfile+opname+"_me2j-double.bin.gz", op.tbme_only()
                             , 8, op.modelspace->GetEmax(), op.modelspace->GetE2max());
 
         // fall back on tokyo if me2j fails
@@ -1741,7 +1741,7 @@ int main(int argc, char** argv)
         {
            op.MakeReduced();
         }
-        rw.write_shell_me2j(intfile+"_"+opname+"_me2j-double.bin.gz", op
+        rw.write_shell_me2j(intfile+"_"+opname+"_me2j-double.bin.gz", op.tbme_only()
                             , 8, op.modelspace->GetE2max(), op.modelspace->GetE2max());
 
         // fall back on tokyo if me2j fails
@@ -1802,7 +1802,7 @@ int main(int argc, char** argv)
         }
         else if (valence_file_format == "shell-me2j")
         {
-          rw.write_shell_me2j(intfile+"_"+opname+"_me2j-double.bin.gz", op
+          rw.write_shell_me2j(intfile+"_"+opname+"_me2j-double.bin.gz", op.tbme_only()
                               , 8, op.modelspace->GetE2max(), op.modelspace->GetE2max());
         }
         else
@@ -1824,7 +1824,7 @@ int main(int argc, char** argv)
         }
         else if (valence_file_format == "shell-me2j")
         {
-          rw.write_shell_me2j(intfile+"_"+opname+"_me2j-double.bin.gz", op
+          rw.write_shell_me2j(intfile+"_"+opname+"_me2j-double.bin.gz", op.tbme_only()
                               , 8, op.modelspace->GetE2max(), op.modelspace->GetE2max());
         }
         else

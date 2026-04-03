@@ -140,6 +140,9 @@ class Operator
   void EraseThreeBody(); ///< set all two-body terms to zero
   void EraseThreeLeg();
 
+  // double fold_one_into_two_body_me(int a,int b,int c,int d) const;
+  Operator tbme_only() const;
+
   void SetHermitian() ;
   void SetAntiHermitian() ;
   void SetNonHermitian() ;
