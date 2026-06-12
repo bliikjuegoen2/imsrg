@@ -162,13 +162,26 @@ TwoBodyME TwoBodyME::include_obme(const arma::mat &obme) const
             {
                 const Ket& ket = tbc_ket.GetKet(j);
 
-                // --- 4. Folding (Embedding) Logic ---
-                // We perform the antisymmetrized expansion of 1-body into 2-body space.
+                int ja = modelspace->GetOrbit(bra.p).j2;
+                int jb = modelspace->GetOrbit(bra.q).j2;
+                int Jb2 = 2 * tbc_bra.J;
+
+                int jr = modelspace->GetOrbit(ket.p).j2;
+                int js = modelspace->GetOrbit(ket.q).j2;
+                int Jk2 = 2 * tbc_ket.J;
+
+                int phase_bra = ((ja + jb - Jb2)/2) % 2 ? -1 : 1;
+                int phase_ket = ((jr + js - Jk2)/2) % 2 ? -1 : 1;
+
                 double fold = 0.0;
+
+                // direct terms
                 if (bra.q == ket.q) fold += obme(bra.p, ket.p);
-                if (bra.q == ket.p) fold -= obme(bra.p, ket.q);
-                if (bra.p == ket.q) fold -= obme(bra.q, ket.p);
                 if (bra.p == ket.p) fold += obme(bra.q, ket.q);
+
+                // exchange terms WITH phase
+                if (bra.p == ket.q) fold -= phase_bra * obme(bra.q, ket.p);
+                if (bra.q == ket.p) fold -= phase_ket * obme(bra.p, ket.q);
 
                 fold /= A_minus_1;
 

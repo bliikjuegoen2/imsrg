@@ -1008,14 +1008,14 @@ void Operator::EraseThreeLeg()
 //     return equiv_tbme
 // }
 
-Operator Operator::tbme_only() const
-{
-    Operator tbme_this(*modelspace);
+// Operator Operator::tbme_only() const
+// {
+//     Operator tbme_this(*modelspace);
 
-    tbme_this.TwoBody = TwoBody.include_obme(OneBody);
+//     tbme_this.TwoBody = TwoBody.include_obme(OneBody);
 
-    return tbme_this;
-}
+//     return tbme_this;
+// }
 
 void Operator::SetHermitian()
 {

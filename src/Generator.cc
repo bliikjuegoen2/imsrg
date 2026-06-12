@@ -39,6 +39,19 @@ std::function<double(double,double)> Generator::qtransferatan1_func = [](double 
 //     return Z;
 // }
 
+class UseIMSRG3N7Scope
+{
+    public:
+        UseIMSRG3N7Scope() {
+            Commutator::SetUseIMSRG3N7(true);
+        }
+        UseIMSRG3N7Scope(const UseIMSRG3N7Scope &) = delete;
+        const UseIMSRG3N7Scope &operator=(const UseIMSRG3N7Scope &) = delete;
+        ~UseIMSRG3N7Scope() {
+            Commutator::SetUseIMSRG3(false);
+        }
+};
+
 CasimirStore::CasimirStore(std::vector<Operator> casimir_operators)
     : rng(std::random_device{}())
     , normal(0.0,1.0) 
@@ -129,6 +142,9 @@ Operator CasimirStore::resample_G() {
 
 void CasimirStore::update_G(const Operator &H, bool does_sampling)
 {
+    UseIMSRG3N7Scope guard;
+    
+
     double H_norm = H.Norm();
 
     if(does_sampling) {
@@ -500,7 +516,11 @@ void Generator::update_G(const Operator &H, bool does_sampling)
     casimir_store->update_G(H, does_sampling);
 }
 
+// [H, G]
+
 void Generator::ConstructGenerator_IrrepUnmixing() {
+
+    UseIMSRG3N7Scope guard;
 
 
     if(casimir_store == nullptr) {
@@ -508,18 +528,12 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
         return;
     }
 
-    Commutator::FactorizedDoubleCommutator::SetUse_1b_Intermediates(true);
-    Commutator::FactorizedDoubleCommutator::SetUse_2b_Intermediates(true);
-
     const Operator &G = casimir_store->get_G();
     const Operator &comm_G_H = casimir_store->get_casimir_lie_bracket();
 
     // [[G,H],H]
     Operator GHH = Commutator::Commutator(comm_G_H, *H);
     
-    Commutator::FactorizedDoubleCommutator::comm223_231(*H, G, GHH);
-    Commutator::FactorizedDoubleCommutator::comm223_232(*H, G, GHH);
-
     // [[[G,H],H],G]
     // Operator new_Eta = lie_bracket(lie_bracket(comm_H_G, *H), G);
     Operator new_Eta = Commutator::Commutator(GHH, G);
@@ -533,6 +547,7 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
 
     std::cout << "theta = " << fmt_angle(angle_to_degs(theta)) << "\t\n";
 
+    new_Eta.EraseThreeBody();
 
 
     *Eta = std::move(new_Eta);

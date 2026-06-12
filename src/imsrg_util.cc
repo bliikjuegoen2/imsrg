@@ -1768,6 +1768,7 @@ Operator J2Op(ModelSpace &modelspace)
       Orbit &oa = modelspace.GetOrbit(bra.p);
       Orbit &ob = modelspace.GetOrbit(bra.q);
       TB(ibra, ibra) = tbc.J * (tbc.J + 1) - 0.5 * oa.j2 * (0.5 * oa.j2 + 1) - 0.5 * ob.j2 * (0.5 * ob.j2 + 1);
+      // std::cout << "TB[" << ibra << ", " << ibra << "] = " << TB(ibra, ibra) << "\n";
     } // for ibra
   } // for ch
   return J2;

@@ -374,9 +374,9 @@ PYBIND11_MODULE(pyIMSRG, m)
               "WriteBinary", [](Operator &self, std::string fname)
               { std::ofstream ofs(fname,std::ios::binary);  self.WriteBinary(ofs); },
               py::arg("filename"))
-          .def(
-              "tbme_only", &Operator::tbme_only
-          )
+          // .def(
+          //     "tbme_only", &Operator::tbme_only
+          // )
           //      .def("IsospinProject", &Operator::IsospinProject)
           ;
 
