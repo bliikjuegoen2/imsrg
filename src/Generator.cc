@@ -207,6 +207,8 @@ void CasimirStore::update_G(const Operator &H, bool does_sampling)
         new_comm_G_H /= norm_factor + 1e-8;
         auto new_comm_G_H_norm = new_comm_G_H.Norm();
 
+        std::cerr << "new_comm_G_H_norm = " << new_comm_G_H_norm << ",\tcomm_G_H_norm = " << comm_G_H_norm << '\n';
+ 
         // the commutator for the new G is large then we accept since we want to force that direction down
         // if its small than the imsrg process is basically done
         if(new_comm_G_H_norm > comm_G_H_norm) {
@@ -214,8 +216,11 @@ void CasimirStore::update_G(const Operator &H, bool does_sampling)
             comm_G_H = std::move(new_comm_G_H);
             comm_G_H_norm = new_comm_G_H_norm;
             
+            std::cout << "successfully resampled" << '\n';
+            
             return;
         }
+        std::cout << "failed to resampled" << '\n';
     }
 
     double G_norm = G.Norm();
