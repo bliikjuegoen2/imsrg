@@ -90,6 +90,7 @@ class Operator
   Operator(ModelSpace&, int Jrank, int Trank, int Parity, int part_rank);
   Operator( const Operator& rhs); ///< Copy constructor
   Operator( Operator&&);
+  bool is_empty() const noexcept;
 
   void print_matrix_keys() const;
 

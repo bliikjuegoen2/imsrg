@@ -117,11 +117,21 @@ std::vector<Operator> &CasimirStore::get_casimir() noexcept {
 
 Operator &CasimirStore::get_G() noexcept
 {
+    if(G.is_empty())
+    {
+        std::cerr << "trying to access G, a null operator" << '\n';
+        exit(1);
+    }
     return G;
 }
 
 const Operator &CasimirStore::get_G() const noexcept
 {
+    if(G.is_empty())
+    {
+        std::cerr << "trying to access G, a null operator" << '\n';
+        exit(1);
+    }
     return G;
 }
 
@@ -225,11 +235,21 @@ double CasimirStore::get_norm_factor() const noexcept {
 
 Operator &CasimirStore::get_casimir_lie_bracket() noexcept
 {
+    if(comm_G_H.is_empty())
+    {
+        std::cerr << "trying to access, comm_G_H a null operator" << '\n';
+        exit(1);
+    }
     return comm_G_H;
 }
 
 const Operator &CasimirStore::get_casimir_lie_bracket() const noexcept
 {
+    if(comm_G_H.is_empty())
+    {
+        std::cerr << "trying to access, comm_G_H a null operator" << '\n';
+        exit(1);
+    }
     return comm_G_H;
 }
 
