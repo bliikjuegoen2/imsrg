@@ -138,6 +138,8 @@ double CasimirStore::get_generator_factor() const noexcept
 
 Operator CasimirStore::resample_G() {
 
+    std::cerr << "<resample_G>" << '\n';
+
     if(Gs.size() == 0) {
         std::cerr << "[Error] : Casimir list is empty!" << std::endl;
         return Operator();
@@ -168,6 +170,8 @@ Operator CasimirStore::resample_G() {
     }
 
     new_G.SetHermitian();
+
+    std::cerr << "<\\resample_G>" << '\n';
 
     return new_G;
 
@@ -589,6 +593,8 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
 
     Scope3b guard(scope_type);
 
+    std::cerr << "<ConstructGenerator_IrrepUnmixing>" << '\n';
+
 
     if(casimir_store == nullptr) {
         std::cerr << "[Generator::ConstructGenerator_IrrepUnmixing], must set casimir operators" << '\n';
@@ -623,6 +629,8 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
 
 
     *Eta = std::move(new_Eta);
+
+    std::cerr << "<\\ConstructGenerator_IrrepUnmixing>" << '\n';
 }
 
 
