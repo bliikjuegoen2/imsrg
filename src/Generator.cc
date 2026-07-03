@@ -601,8 +601,10 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
         return;
     }
 
+    std::cerr << "<casimir_store>" << '\n';
     const Operator &G = casimir_store->get_G();
     const Operator &comm_G_H = casimir_store->get_casimir_lie_bracket();
+    std::cerr << "<\\casimir_store>" << '\n';
 
     // [[G,H],H] = -[H,[G,H]] = [H,[H,G]]
     Operator GHH = Commutator::Commutator(comm_G_H, *H);
@@ -617,11 +619,14 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     Operator new_Eta = Commutator::Commutator(GHH, G);
     new_Eta.SetAntiHermitian();
 
+    std::cerr << "<casimir_store>" << '\n';
     // normalize Eta
     new_Eta *= casimir_store->get_generator_factor()/(casimir_store->get_norm_factor() + 1e-6);
 
     double comm_norm = casimir_store->get_casimir_lie_bracket_norm();
+    std::cerr << "<\\casimir_store>" << '\n';
     double theta = comm_to_angle(comm_norm);
+
 
     std::cout << "theta = " << fmt_angle(angle_to_degs(theta)) << "\t\n";
 
