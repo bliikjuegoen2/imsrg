@@ -598,7 +598,8 @@ void Generator::update_G(const Operator &H, bool does_sampling)
     }
 
     // should only perform calculations if we are unmixing
-    if (generator_type != "irrep-unmixing" && generator_type != "irrep-unmixing-3f2" || generator_type != "irrep-unmixing-3N7") {
+    if (generator_type != "irrep-unmixing" && generator_type != "irrep-unmixing-3f2" && generator_type != "irrep-unmixing-3N7") {
+        std::cerr << "generator = " << generator_type << "\n";
         return;
     }
 
