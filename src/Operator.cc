@@ -126,7 +126,7 @@ Operator::Operator(Operator &&op)
 
 bool Operator::is_empty() const noexcept
 {
-    return modelspace == nullptr || TwoBody.IsAllocated();
+    return TwoBody.IsAllocated();
 }
 
 void Operator::print_matrix_keys() const
