@@ -12,6 +12,7 @@
 #include <ranges>
 #include <boost/io/ios_state.hpp>
 #include <boost/format.hpp>
+#include <string_view>
 
 constexpr double pi = 3.14159265358979323846;
 
@@ -39,17 +40,49 @@ std::function<double(double,double)> Generator::qtransferatan1_func = [](double 
 //     return Z;
 // }
 
-class UseIMSRG3N7Scope
+class Scope3b
 {
     public:
-        UseIMSRG3N7Scope() {
-            Commutator::SetUseIMSRG3N7(true);
+    private:
+    ScopeType scope_type;
+    public:
+        Scope3b(ScopeType scope_type_param): scope_type(scope_type_param) {
+            switch(scope_type)
+            {
+                case ScopeType::IMSRG3N7:
+                    Commutator::SetUseIMSRG3N7(true);
+                    std::cerr << "[ScopeType::ScopeType] scope_type = ScopeType::IMSRG3N7" << '\n';
+                    break;
+                case ScopeType::IMSRG3f2:
+                    Commutator::FactorizedDoubleCommutator::SetUse_1b_Intermediates(true);
+                    Commutator::FactorizedDoubleCommutator::SetUse_2b_Intermediates(true);
+                    std::cerr << "[ScopeType::ScopeType] scope_type = ScopeType::IMSRG3f2" << '\n';
+                    break;
+                default:
+                    std::cerr << "[ScopeType::ScopeType] scope_type = ScopeType::None" << '\n';
+                    break;
+            }
         }
-        UseIMSRG3N7Scope(const UseIMSRG3N7Scope &) = delete;
-        const UseIMSRG3N7Scope &operator=(const UseIMSRG3N7Scope &) = delete;
-        ~UseIMSRG3N7Scope() {
-            Commutator::SetUseIMSRG3(false);
+        Scope3b(const Scope3b &) = delete;
+        const Scope3b &operator=(const Scope3b&) = delete;
+        ~Scope3b() {
+            switch(scope_type)
+            {
+                case ScopeType::IMSRG3N7:
+                    Commutator::SetUseIMSRG3N7(false);
+                    std::cerr << "[ScopeType::~ScopeType] scope_type = ScopeType::IMSRG3N7" << '\n';
+                    break;
+                case ScopeType::IMSRG3f2:
+                    Commutator::FactorizedDoubleCommutator::SetUse_1b_Intermediates(false);
+                    Commutator::FactorizedDoubleCommutator::SetUse_2b_Intermediates(false);
+                    std::cerr << "[ScopeType::~ScopeType] scope_type = ScopeType::IMSRG3f2" << '\n';
+                    break;
+                default:
+                    std::cerr << "[ScopeType::~ScopeType] scope_type = ScopeType::None" << '\n';
+                    break;
+            }
         }
+    
 };
 
 CasimirStore::CasimirStore(std::vector<Operator> casimir_operators)
@@ -61,6 +94,7 @@ CasimirStore::CasimirStore(std::vector<Operator> casimir_operators)
     , norm_factor(0.0)
     , generator_factor(0.0)
     , emax(0)
+    , scope_type(ScopeType::None)
     
 {
     for (auto &op : Gs) {
@@ -142,7 +176,7 @@ Operator CasimirStore::resample_G() {
 
 void CasimirStore::update_G(const Operator &H, bool does_sampling)
 {
-    UseIMSRG3N7Scope guard;
+    Scope3b guard(scope_type);
     
 
     double H_norm = H.Norm();
@@ -200,6 +234,11 @@ double CasimirStore::get_casimir_lie_bracket_norm() const noexcept {
     return comm_G_H_norm;
 }
 
+void CasimirStore::set_scope_type(ScopeType scope_type_param) noexcept
+{
+    scope_type = scope_type_param;
+}
+
 // comm_norm is assumed to be normalized |[G,H]|/(|G||H|)
 double comm_to_angle(double comm_norm) {
     // factor of 2 is needed because (1/2)|[G,H]| <= |G||H|
@@ -251,8 +290,9 @@ std::string fmt_angle(std::tuple<int, int, double> theta)
 
 Generator::Generator()
   : generator_type("white"),/* modelspace(NULL),*/ denominator_cutoff(1e-6)  , denominator_delta(0), denominator_delta_index(-1), denominator_partitioning(Epstein_Nesbet),  only_2b_eta(false), use_isospin_averaging(false), only_1b_eta(false)
-  , H(nullptr), Eta(nullptr), casimir_store(nullptr)
-{}
+  , H(nullptr), Eta(nullptr), casimir_store(nullptr), scope_type(ScopeType::None)
+{
+}
 
 
 
@@ -272,6 +312,22 @@ void Generator::Update(Operator& H_s, Operator& Eta_s)
       // Eta_s = Eta_s.DoIsospinAveraging();
       Eta_s = Eta_s.UndoNormalOrdering().DoIsospinAveraging().DoNormalOrdering();
    }
+}
+
+void Generator::fix_scope_type()
+{
+    if (generator_type == "irrep-unmixing-3f2") {
+        generator_type = "irrep-unmixing";
+        scope_type = ScopeType::IMSRG3f2;
+    } else if (generator_type == "irrep-unmixing-3N7") {
+        generator_type = "irrep-unmixing";
+        scope_type = ScopeType::IMSRG3N7;
+    }
+    if(casimir_store == nullptr) {
+        std::cerr << "casimir store is null!" << '\n';
+        exit(1);
+    }
+    casimir_store->set_scope_type(scope_type);
 }
 
 
@@ -301,7 +357,11 @@ void Generator::AddToEta(Operator& H_s, Operator& Eta_s)
       std::function<double(double,double)> qtransferatanN_func = [n](double Hod, double denom){return pow(std::abs(denom)*M_NUCLEON/HBARC/HBARC, 0.5*n) * atan_func(Hod, denom);};
       ConstructGenerator_SingleRef( qtransferatanN_func );
    }
-   else if (generator_type == "irrep-unmixing") {
+   else if (generator_type == "irrep-unmixing"
+            || generator_type == "irrep-unmixing-3f2"
+            || generator_type == "irrep-unmixing-3N7")
+   {
+       fix_scope_type();
        std::cout << "unmixing enabled [AddToEta]" << '\n';
        ConstructGenerator_IrrepUnmixing();
    }
@@ -324,7 +384,11 @@ Operator Generator::GetHod(Operator& H)
    {
       if (generator_type == sm )  return GetHod_ShellModel(H);
    }
-   if (generator_type == "irrep-unmixing") {
+   if (generator_type == "irrep-unmixing"
+            || generator_type == "irrep-unmixing-3f2"
+            || generator_type == "irrep-unmixing-3N7")
+   {
+       fix_scope_type();
        std::cout << "unmixing enabled [GetHod]" << std::endl;
        return GetHod_IrrepUnmixing(H);
    }
@@ -500,6 +564,7 @@ std::vector<Operator> *Generator::get_casimir() noexcept {
 
 void Generator::set_casimir_store(CasimirStore &new_casimir_store) noexcept {
     casimir_store = &new_casimir_store;
+    casimir_store->set_scope_type(scope_type);
 }
 
 void Generator::update_G(const Operator &H, bool does_sampling)
@@ -509,9 +574,11 @@ void Generator::update_G(const Operator &H, bool does_sampling)
     }
 
     // should only perform calculations if we are unmixing
-    if (generator_type != "irrep-unmixing") {
+    if (generator_type != "irrep-unmixing" && generator_type != "irrep-unmixing-3f2" || generator_type != "irrep-unmixing-3N7") {
         return;
     }
+
+    fix_scope_type();
 
     casimir_store->update_G(H, does_sampling);
 }
@@ -520,7 +587,7 @@ void Generator::update_G(const Operator &H, bool does_sampling)
 
 void Generator::ConstructGenerator_IrrepUnmixing() {
 
-    UseIMSRG3N7Scope guard;
+    Scope3b guard(scope_type);
 
 
     if(casimir_store == nullptr) {
@@ -531,10 +598,15 @@ void Generator::ConstructGenerator_IrrepUnmixing() {
     const Operator &G = casimir_store->get_G();
     const Operator &comm_G_H = casimir_store->get_casimir_lie_bracket();
 
-    // [[G,H],H]
+    // [[G,H],H] = -[H,[G,H]] = [H,[H,G]]
     Operator GHH = Commutator::Commutator(comm_G_H, *H);
+
+    if(scope_type == ScopeType::IMSRG3f2) {
+        Commutator::FactorizedDoubleCommutator::comm223_231(*H, G, GHH);
+        Commutator::FactorizedDoubleCommutator::comm223_232(*H, G, GHH);
+    }
     
-    // [[[G,H],H],G]
+    // Eta = [[[G,H],H],G]
     // Operator new_Eta = lie_bracket(lie_bracket(comm_H_G, *H), G);
     Operator new_Eta = Commutator::Commutator(GHH, G);
     new_Eta.SetAntiHermitian();

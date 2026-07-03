@@ -27,6 +27,8 @@
 #include <random>
 #include <tuple>
 
+enum class ScopeType : std::uint8_t {None, IMSRG3N7, IMSRG3f2};
+
 class CasimirStore
 {
     protected:
@@ -39,6 +41,7 @@ class CasimirStore
         double norm_factor;
         double generator_factor;
         size_t emax; // need this to normalize the unmixing generator
+        ScopeType scope_type;
 
         
     public:
@@ -61,6 +64,7 @@ class CasimirStore
         double get_casimir_lie_bracket_norm() const noexcept;
         void set_generator_factor(double factor) noexcept;
         double get_generator_factor() const noexcept;
+        void set_scope_type(ScopeType scope_type_param) noexcept;
 };
 
 
@@ -93,6 +97,7 @@ class Generator
   bool only_1b_eta;
   bool only_2b_eta; // even if we're doing IMSRG(3), keep eta to 2b
   bool use_isospin_averaging;
+  ScopeType scope_type;
 
   // The functional form dictating what to do with Hod and a denominator
   static std::function<double(double,double)> wegner_func;
@@ -143,6 +148,7 @@ class Generator
   Operator GetHod_IrrepUnmixing(Operator &H);
   Operator GetHod_SingleRef( Operator& H );
   Operator GetHod_ShellModel( Operator& H );
+  void fix_scope_type();
   
 
 };
